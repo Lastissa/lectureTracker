@@ -1,0 +1,7 @@
+FOR THE BACKEND
+* USER MODEL - 	username, password, email for password reset (done)
+* HISTORY MODEL - data(list), last backup time
+		cls
+* ONE TO ONE FEILD FOR THE LECTURE HISTORY (HISTORY) - A json List with only one key which is 'history' and value which is list of the history itself
+
+

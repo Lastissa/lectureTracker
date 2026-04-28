@@ -26,7 +26,6 @@ SECRET_KEY = 'django-insecure-&3zbelww_-=mt^n^t0x8=ec$f#0)cx=j6nifveegfvo6-d7d4b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -40,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -123,5 +123,5 @@ STATIC_URL = 'static/'
 
 #Where i started writing custom data
 
-# CORS_ALLOWED_ORIGINS = ["*"]
-CORS_ALLOW_ALL_ORIGINS = True
+ALLOWED_HOSTS = ["*"]
+# CORS_ALLOW_ALL_ORIGINS = True
