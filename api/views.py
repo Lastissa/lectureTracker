@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 import datetime as dt
 
 
-
+#To add and update data(except update username and email) to the db,
 @api_view(['POST', 'PATCH'])
 def backupView(request):
     requestUserName =  request.data.get('username', '').strip().upper()
@@ -61,7 +61,7 @@ def backupView(request):
 
 
 
-
+#To get one data from the db
 @api_view(['GET'])
 def viewData(request):
     requestEmail =  request.query_params.get('email', 'default').upper()
@@ -89,7 +89,7 @@ def viewData(request):
     
     
     
-    
+#View all data at once
 @api_view(['GET'])
 def viewAllData(request):
     historyObjects = History.objects.all()
@@ -117,15 +117,24 @@ def deactivateAccount(request):
     except:
         return JsonResponse({'message': 'User not found'})
     if object.check_password(_password):
-        object.delete()
+        userserializer = UserSerializer(object, data = {'is_active': False}, partial = True)
+        if userserializer.is_valid():
+            userserializer.save()
+        return JsonResponse({'message': f'{_userName} deactivated'})
     else:
         return JsonResponse({'message': 'Incorrect password'})
     
     return JsonResponse({'message': f'{request.query_params.get("username", "default")} deleted'})
     
-    # User.objects.all().delete()
-    # History.objects.all().delete()
-    # return JsonResponse({'message': 'All data deleted'})
+    
+@api_view(['DELETE', 'GET'])
+def deleteAllData(request):
+    goAhead = request.query_params.get('go_ahead', 'default')
+    if goAhead != 'yes':
+        return JsonResponse({'message': 'Unauthorized', 'hint': 'go_ahead: yes'})
+    else:
+        User.objects.all().delete()
+        return JsonResponse({'message': 'All data deleted'})
 
 
 
