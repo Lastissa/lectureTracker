@@ -7,7 +7,7 @@
     }
   ],
   "functions": {
-    "your_project_name/wsgi.py": {
+    "LECTURE_TRACKER_BACKEND/wsgi.py": {
       "runtime": "@vercel/python",
       "includeFiles": "api/templates/**"
     }
