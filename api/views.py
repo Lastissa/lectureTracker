@@ -113,8 +113,8 @@ def frontendViewData(request):
         if userFilter is not None:
             #user exist
             #check password
-            userObjectn = User.objects.get(email__iexact = requestEmail)
-            if userObject.check_password(requestPassword):
+            userObjects = User.objects.get(email__iexact = requestEmail)
+            if userObjects.check_password(requestPassword):
                 #correct password
                 #return user data 
                 historyObjects = History.objects.get(_user = userObjects)
@@ -123,7 +123,7 @@ def frontendViewData(request):
                 currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = False)
                 userSerializer = UserSerializer(userObjects, many = False)
                 pass
-                #return render
+                # return render()
             
                 
             else:
