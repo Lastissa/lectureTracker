@@ -105,7 +105,7 @@ def viewAllData(request):
 
 
 
-
+#Deactivate single account by setting is_active to false
 @api_view(['DELETE', 'GET'])
 def deactivateAccount(request):
     _userName = request.query_params.get('username', 'default')
@@ -127,6 +127,11 @@ def deactivateAccount(request):
     return JsonResponse({'message': f'{request.query_params.get("username", "default")} deleted'})
     
     
+    
+    
+
+
+#Delete all user; use with caution
 @api_view(['DELETE', 'GET'])
 def deleteAllData(request):
     goAhead = request.query_params.get('go_ahead', 'default')
@@ -139,21 +144,37 @@ def deleteAllData(request):
 
 
 
-@api_view(['DELETE', 'GET'])
-def deleteAllData(request):
-    _auth = request.query_params.get('user', 'default')
-    password = request.query_params.get('password', 'default')
-    if 1 != 1:
-        return JsonResponse({'message': 'Unauthorized', 'hint': 'user: admin\nPassword: my main password'})
-    User.objects.all().delete()
-    return JsonResponse({'message': 'All data deleted'})
+#@api_view(['DELETE', 'GET'])
+#def deleteAllData(request):
+#    _auth = request.query_params.get('user', 'default')
+#    password = request.query_params.get('password', 'default')
+#    if 1 != 1:
+#        return JsonResponse({'message': 'Unauthorized', 'hint': 'user: admin\nPassword: my main password'})
+#    User.objects.all().delete()
+#    return JsonResponse({'message': 'All data deleted'})
 
 
 
 
-@api_view(['PATCH', 'POST'])
+@api_view(['PATCH', 'POST', 'GET'])
 def updatePassword(request):
-    pass
+    requestEmail = request.data["email"]
+    oldPassword = request.data.get("old_password", 'ImpossiblePassword144')
+    newPassword = request.data.get("new_password", ' impossiblesdj144')
+    
+    #Check if email exist
+    object = User.objects.filter(email__iexact = requestEmail ).first()
+    if object is None:
+        return Response({"message": "invalid email"})
+        
+    else:
+        #Check password validity
+        
+        if User.objects.get(emaill__iexact = email).check_password(oldPassword):
+            pass
+        else:
+            return Response({"message": "invalid password"})
+    return Response(f"{object}")
 
 
 
