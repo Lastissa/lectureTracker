@@ -57,7 +57,13 @@ def backupView(request):
         CurrentDataserializer = CurrentDataSerializer(currentDataObject, many = False)
 
         return Response('Account Created', status=201)
-    
+
+
+
+
+
+
+
 
 
 
@@ -83,12 +89,46 @@ def viewData(request):
             return JsonResponse({'message': 'Incorrect password'})
 
     else:
-        return Response({'message': 'no user found'})
+        return Response({"message":"user not found"})
+        #return render(request, "api/request_incomplete/request_incomplete.html")
+    
 
-    
-    
-    
-    
+
+
+
+
+
+#for the frontend aspect - GET ONE DATA 
+@api_view(['GET', "POST", "PATCH", "PUT"])
+def frontendViewData(request):
+    #check if the query params is empty , if it is return a sleek UI for them to see
+    requestEmail = request.query_params.get('email', 'empty').strip()
+    requestPassword = request.query_params.get('password', 'empty').strip()
+    if requestEmail == "empty" or requestPassword == "empty":
+        return render(request, "api/request_incomplete/viewData_welcome.html" )
+    #mean user have try checking their details
+    else:
+        #Check if user exist
+        userObject = User.objects.filter(email__iexact = requestEmail).first
+        if userObject is not None:
+            #check password
+            if User.objects.get(email__iexact = requestEmail).check_password(requestPassword):
+                
+            else:
+                #wrong password
+        
+        else:
+            #user does not exist
+            return  render(request, "api/request_incomplete/viewData_no_user.html")
+        
+        
+
+
+
+
+
+
+
 #View all data at once
 @api_view(['GET'])
 def viewAllData(request):

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Missing Parameters</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #111827;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 15px;
+      font-size: 24px;
+      color: #38bdf8;
+    }
+
+    p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #cbd5f5;
+    }
+
+    .code-box {
+      background: #020617;
+      padding: 12px;
+      margin-top: 20px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 14px;
+      color: #94a3b8;
+      word-break: break-all;
+    }
+
+    .footer {
+      margin-top: 25px;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .highlight {
+      color: #22c55e;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Missing Required Parameters</h1>
+
+    <p id="message">
+      Checking request...
+    </p>
+
+    <div class="code-box" id="example"></div>
+
+    <div class="footer">
+      Ensure your request includes the required query parameters.
+    </div>
+  </div>
+
+  <script>
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        email: params.get("email"),
+        password: params.get("password")
+      };
+    }
+
+    function validateParams() {
+      const { email, password } = getQueryParams();
+
+      const messageEl = document.getElementById("message");
+      const exampleEl = document.getElementById("example");
+
+      if (!email || !password) {
+        messageEl.innerHTML = `
+          The request is missing one or more required query parameters.
+          Please include both <span class="highlight">email</span> and 
+          <span class="highlight">password</span> in the URL to proceed.
+        `;
+
+        exampleEl.innerText =
+          window.location.origin +
+          window.location.pathname +
+          "?email=example@mail.com&password=yourpassword";
+      } else {
+        messageEl.innerHTML = `
+          Required parameters detected. You may proceed.
+        `;
+
+        exampleEl.innerText = "Validation successful.";
+      }
+    }
+
+    validateParams();
+  </script>
+
+</body>
+</html>

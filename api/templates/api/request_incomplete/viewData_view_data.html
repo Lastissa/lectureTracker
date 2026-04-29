@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #38bdf8;
+      margin-bottom: 25px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .card {
+      background: #111827;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .key {
+      font-weight: bold;
+      color: #38bdf8;
+      margin-bottom: 4px;
+      display: block;
+      text-transform: capitalize;
+    }
+
+    .value {
+      color: #cbd5e1;
+      padding-left: 5px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #94a3b8;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Fetched Data</h1>
+
+  {% if data %}
+
+    <div class="container">
+
+      {% for item in data %}
+        <div class="card">
+
+          {% for key, value in item.items %}
+            <div class="field">
+              <span class="key">{{ key }}</span>
+              <div class="value">{{ value }}</div>
+            </div>
+          {% endfor %}
+
+        </div>
+      {% endfor %}
+
+    </div>
+
+  {% else %}
+
+    <div class="empty">
+      No data available at the moment.
+    </div>
+
+  {% endif %}
+
+</body>
+</html>
