@@ -1,11 +1,56 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>API Dashboard</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .section { margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .btn { 
+            display: inline-block; padding: 10px 15px; background: #007bff; color: white; 
+            text-decoration: none; border-radius: 5px; text-align: center; transition: 0.3s;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #a71d2a; }
+        .btn-warning { background: #ffc107; color: #212529; }
+    </style>
 </head>
 <body>
-    <p>empty for now</p>
+
+    <h1>API Control Panel</h1>
+
+    <!-- Data Views -->
+    <div class="section">
+        <h3>Data Management</h3>
+        <div class="grid">
+            <a href="/viewData/" class="btn">View Single Data</a>
+            <a href="/viewAllData/" class="btn">View All Data</a>
+            <a href="/backupData/" class="btn btn-warning">Backup All Data</a>
+        </div>
+    </div>
+
+    <!-- User Updates -->
+    <div class="section">
+        <h3>Account Settings</h3>
+        <div class="grid">
+            <a href="/updateUsername/" class="btn">Update Username</a>
+            <a href="/updateEmail/" class="btn">Update Email</a>
+            <a href="/updatePassword/" class="btn">Update Password</a>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="section" style="border: 1px solid #ffcccc; padding: 15px; border-radius: 8px;">
+        <h3 style="color: #dc3545;">Danger Zone</h3>
+        <div class="grid">
+            <a href="/deactivateAccount/" class="btn btn-danger">Deactivate Account</a>
+            <a href="/deleteAllData/" class="btn btn-danger">Delete All Data</a>
+        </div>
+    </div>
+
 </body>
 </html>
