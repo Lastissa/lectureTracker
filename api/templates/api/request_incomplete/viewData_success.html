@@ -93,7 +93,7 @@
 <body>
 
   <h1>Fetched Data</h1>
-<div style="display:flex; justify-content:center; margin-bottom:20px;">
+  <div style="display:flex; justify-content:center; margin-bottom:20px;">
   <button onclick="goToJson()" style="
     background:#1f2937;
     border:1px solid #334155;
@@ -107,6 +107,7 @@
   onmouseout="this.style.borderColor='#334155'">
     View JSON
   </button>
+</div>
 </div>
   <!-- USER SECTION -->
   <div class="section">
@@ -167,6 +168,61 @@
       <div class="empty">No current data available</div>
     {% endif %}
   </div>
+  <div id="jsonModal" onclick="closeModal(event)" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+">
+
+  <div style="
+    width:90%;
+    max-width:800px;
+    height:80vh;
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  ">
+
+    <div style="
+      padding:12px;
+      background:#111827;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:1px solid #334155;
+    ">
+      <span style="color:#38bdf8;">JSON Preview</span>
+      <button onclick="closeJsonModal()" style="
+        background:#334155;
+        border:none;
+        color:white;
+        padding:6px 10px;
+        border-radius:6px;
+        cursor:pointer;
+      ">
+        Close
+      </button>
+    </div>
+
+    <pre id="jsonOutput" style="
+      padding:14px;
+      overflow-y:auto;
+      color:#cbd5e1;
+      font-size:13px;
+      font-family:monospace;
+      white-space:pre-wrap;
+      margin:0;
+    "></pre>
+
+  </div>
+</div>
 <script>
   function goToJson() {
     const baseUrl = window.location.origin;
