@@ -38,20 +38,29 @@
       line-height: 1.5;
     }
 
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-      background: #0f172a;
-      color: white;
-      outline: none;
-    }
+input {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: #e2e8f0;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
 
-    input:focus {
-      border: 1px solid #38bdf8;
-    }
+input::placeholder {
+  color: #64748b;
+}
+
+input:focus {
+  border: 1px solid #38bdf8;
+  background: #020617;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
 
     button {
       width: 100%;
@@ -68,6 +77,15 @@
 
     button:hover {
       background: #0ea5e9;
+    }
+
+    .back-btn {
+      background: #334155;
+      color: #e2e8f0;
+    }
+
+    .back-btn:hover {
+      background: #475569;
     }
 
     .note {
@@ -95,6 +113,9 @@
 
     <button onclick="redirectUser()">Fetch Data</button>
 
+    <!-- Back Button -->
+    <button class="back-btn" onclick="goBack()">Go Back</button>
+
     <div class="note">
       Ensure credentials are correct before submitting.
     </div>
@@ -117,6 +138,10 @@
         encodeURIComponent(password);
 
       window.location.href = url;
+    }
+
+    function goBack() {
+      window.history.back();
     }
   </script>
 

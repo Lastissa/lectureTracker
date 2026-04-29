@@ -102,20 +102,33 @@ def viewData(request):
 @api_view(['GET', "POST", "PATCH", "PUT"])
 def frontendViewData(request):
     #check if the query params is empty , if it is return a sleek UI for them to see
-    requestEmail = request.query_params.get('email', 'empty').strip()
+    requestEmail = request.query_params.get('email', 'empty').strip().upper()
     requestPassword = request.query_params.get('password', 'empty').strip()
     if requestEmail == "empty" or requestPassword == "empty":
         return render(request, "api/request_incomplete/viewData_welcome.html" )
-    #mean user have try checking their details
+    #mean user have typed correctly clicked email
     else:
         #Check if user exist
-        userObject = User.objects.filter(email__iexact = requestEmail).first
-        if userObject is not None:
+        userFilter = User.objects.filter(email__iexact = requestEmail).first()
+        if userFilter is not None:
+            #user exist
             #check password
-            if User.objects.get(email__iexact = requestEmail).check_password(requestPassword):
+            userObjectn = User.objects.get(email__iexact = requestEmail)
+            if userObject.check_password(requestPassword):
+                #correct password
+                #return user data 
+                historyObjects = History.objects.get(_user = userObjects)
+                CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
+                historySerializer =  HistorySerializer(historyObjects ,many = False)
+                currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = False)
+                userSerializer = UserSerializer(userObjects, many = False)
+                pass
+                #return render
+            
                 
             else:
                 #wrong password
+                return render(request, "api/request_incomplete/viewData_wrong_password.html")
         
         else:
             #user does not exist

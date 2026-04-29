@@ -46,19 +46,32 @@
     }
 
     button {
-      background: #38bdf8;
-      border: none;
-      padding: 12px 18px;
+      padding: 12px;
       border-radius: 8px;
+      border: none;
       font-weight: bold;
       cursor: pointer;
-      color: black;
-      transition: 0.2s;
       width: 100%;
+      margin-top: 10px;
+      transition: 0.2s;
     }
 
-    button:hover {
+    .primary-btn {
+      background: #38bdf8;
+      color: black;
+    }
+
+    .primary-btn:hover {
       background: #0ea5e9;
+    }
+
+    .secondary-btn {
+      background: #334155;
+      color: #e2e8f0;
+    }
+
+    .secondary-btn:hover {
+      background: #475569;
     }
 
     .icon {
@@ -71,6 +84,7 @@
 <body>
 
   <div class="card">
+
     <div class="icon">⚠️</div>
 
     <h1>User Not Found</h1>
@@ -84,14 +98,24 @@
       If you are a new user, please create an account to continue.
     </div>
 
-    <button onclick="goToCreateAccount()">
+    <button class="primary-btn" onclick="goToCreateAccount()">
       Create New Account
     </button>
+
+    <!-- Back button moved to bottom -->
+    <button class="secondary-btn" onclick="goBack()">
+      ⬅ Go Back
+    </button>
+
   </div>
 
   <script>
     function goToCreateAccount() {
       window.location.href = "http://127.0.0.1:8000/createAccount/";
+    }
+
+    function goBack() {
+      window.history.back();
     }
   </script>
 
