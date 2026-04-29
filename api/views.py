@@ -119,11 +119,21 @@ def frontendViewData(request):
                 #return user data 
                 historyObjects = History.objects.get(_user = userObjects)
                 CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
+                
                 historySerializer =  HistorySerializer(historyObjects ,many = False)
                 currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = False)
                 userSerializer = UserSerializer(userObjects, many = False)
-                pass
-                # return render()
+                #Filter the password and id out
+                userPersonal = userSerializer.data
+                userPersonal.pop('id')
+                userPersonal.pop('username')
+                userPersonal.pop('password')
+                
+                return render(request, "api/request_incomplete/viewData_success.html", {
+                    'user': userPersonal,
+                    'history': historySerializer.data,
+                    'currentData': currentDataSerializer.data
+                })
             
                 
             else:

@@ -11,51 +11,81 @@
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #0f172a, #1e293b);
       color: #e2e8f0;
-      padding: 30px;
+      padding: 20px;
+      overflow-y: auto;
     }
 
-    h1 {
+    h1, h2 {
       text-align: center;
       color: #38bdf8;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-width: 800px;
-      margin: auto;
+    .section {
+      max-width: 900px;
+      margin: 30px auto;
     }
 
     .card {
       background: #111827;
       padding: 20px;
       border-radius: 12px;
+      margin-bottom: 15px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeInUp 0.6s ease both;
+    }
+
+    .card:hover {
+      transform: translateY(-5px) scale(1.01);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
     }
 
     .field {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .key {
       font-weight: bold;
       color: #38bdf8;
-      margin-bottom: 4px;
-      display: block;
       text-transform: capitalize;
+      display: block;
+      margin-bottom: 3px;
     }
 
     .value {
       color: #cbd5e1;
       padding-left: 5px;
+      word-break: break-word;
     }
 
     .empty {
       text-align: center;
       color: #94a3b8;
-      margin-top: 50px;
+      margin-top: 20px;
+    }
+
+    /* Scroll animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Subtle floating animation when idle */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-3px); }
+      100% { transform: translateY(0px); }
+    }
+
+    .card {
+      animation: fadeInUp 0.6s ease, float 4s ease-in-out infinite;
     }
   </style>
 </head>
@@ -64,32 +94,65 @@
 
   <h1>Fetched Data</h1>
 
-  {% if data %}
+  <!-- USER SECTION -->
+  <div class="section">
+    <h2>User Information</h2>
 
-    <div class="container">
+    {% if user %}
+      <div class="card">
+        {% for key, value in user.items %}
+          {% if key != "Id" %}
+            <div class="field">
+              <span class="key">{{ key }}</span>
+              <div class="value">{{ value }}</div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No user data available</div>
+    {% endif %}
+  </div>
 
-      {% for item in data %}
+  <!-- HISTORY SECTION -->
+  <div class="section">
+    <h2>History</h2>
+
+    {% if history.data %}
+      {% for item in history.data %}
         <div class="card">
-
           {% for key, value in item.items %}
             <div class="field">
               <span class="key">{{ key }}</span>
               <div class="value">{{ value }}</div>
             </div>
           {% endfor %}
-
         </div>
       {% endfor %}
+    {% else %}
+      <div class="empty">No history available</div>
+    {% endif %}
+  </div>
 
-    </div>
+  <!-- CURRENT DATA SECTION -->
+  <div class="section">
+    <h2>Current Data</h2>
 
-  {% else %}
-
-    <div class="empty">
-      No data available at the moment.
-    </div>
-
-  {% endif %}
+    {% if currentData.data %}
+      {% for item in currentData.data %}
+        <div class="card">
+          {% for key, value in item.items %}
+            <div class="field">
+              <span class="key">{{ key }}</span>
+              <div class="value">{{ value }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">No current data available</div>
+    {% endif %}
+  </div>
 
 </body>
 </html>
