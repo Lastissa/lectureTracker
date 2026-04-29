@@ -220,5 +220,5 @@ def updateUsername(request):
 #This is for the homepage
 @api_view(['GET'])
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'api/homehtml.html')
 
