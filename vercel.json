@@ -1,12 +1,5 @@
 {
-    
   "version": 2,
-  "builds": [
-    {
-      "src": "LECTURE_TRACKER_BACKEND/wsgi.py", 
-      "use": "@vercel/python"
-    }
-  ],
   "routes": [
     {
       "src": "/(.*)",
@@ -14,7 +7,8 @@
     }
   ],
   "functions": {
-    "LECTURE_TRACKER_BACKEND/wsgi.py": {
+    "your_project_name/wsgi.py": {
+      "runtime": "@vercel/python",
       "includeFiles": "api/templates/**"
     }
   }
