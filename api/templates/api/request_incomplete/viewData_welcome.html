@@ -109,8 +109,24 @@ input:focus {
     </p>
 
     <input type="email" id="email" placeholder="Enter email" required>
-    <input type="password" id="password" placeholder="Enter password" required>
+   <div style="position: relative;">
+  <input type="password" id="password" placeholder="Enter password" required>
 
+  <span onclick="togglePassword()"
+        id="toggleText"
+        style="
+          position:absolute;
+          right:10px;
+          top:50%;
+          transform:translateY(-50%);
+          cursor:pointer;
+          font-size:12px;
+          color:#38bdf8;
+          user-select:none;
+        ">
+    Show
+  </span>
+</div>
     <button onclick="redirectUser()">Fetch Data</button>
 
     <!-- Back Button -->
@@ -122,6 +138,18 @@ input:focus {
   </div>
 
   <script>
+  function togglePassword() {
+  const input = document.getElementById("password");
+  const toggle = document.getElementById("toggleText");
+
+  if (input.type === "password") {
+    input.type = "text";
+    toggle.innerText = "Hide";
+  } else {
+    input.type = "password";
+    toggle.innerText = "Show";
+  }
+}
     function redirectUser() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;

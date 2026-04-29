@@ -125,10 +125,10 @@ def frontendViewData(request):
                 userSerializer = UserSerializer(userObjects, many = False)
                 #Filter the password and id out
                 userPersonal = userSerializer.data
-                userPersonal.pop('id')
-                userPersonal.pop('username')
-                userPersonal.pop('password')
-                
+                userPersonal.pop('id', None)
+                userPersonal.pop('username', None)
+                userPersonal.pop('password', None)
+                #return Response('s')
                 return render(request, "api/request_incomplete/viewData_success.html", {
                     'user': userPersonal,
                     'history': historySerializer.data,
