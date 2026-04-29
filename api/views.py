@@ -156,11 +156,11 @@ def deleteAllData(request):
 
 
 
-@api_view(['PATCH', 'POST', 'GET'])
+@api_view(['PATCH', 'POST'])
 def updatePassword(request):
     requestEmail = request.data["email"]
     oldPassword = request.data.get("old_password", 'ImpossiblePassword144')
-    newPassword = request.data.get("new_password", ' impossiblesdj144')
+    newPassword = request.data.get("new_password", '')
     
     #Check if email exist
     object = User.objects.filter(email__iexact = requestEmail ).first()
@@ -169,9 +169,11 @@ def updatePassword(request):
         
     else:
         #Check password validity
-        
-        if User.objects.get(emaill__iexact = email).check_password(oldPassword):
-            pass
+        userObject = User.objects.get(email__iexact = requestEmail)
+        if userObject.check_password(oldPassword):
+            userObject.set_password(newPassword)
+            userObject.save()
+            return Response({"message": "update password success"})
         else:
             return Response({"message": "invalid password"})
     return Response(f"{object}")
