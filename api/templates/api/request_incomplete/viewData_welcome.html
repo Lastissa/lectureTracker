@@ -131,8 +131,8 @@ input:focus {
         return;
       }
 
-      const url =
-        "http://127.0.0.1:8000/viewData/?email=" +
+      const url =window.location.origin
+        "/viewData/?email=" +
         encodeURIComponent(email) +
         "&password=" +
         encodeURIComponent(password);
