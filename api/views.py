@@ -10,9 +10,96 @@ from django.contrib.auth.models import User
 import datetime as dt
 
 
+
+#To get one data from the db
+@api_view(['GET'])
+def viewData(request):
+    requestEmail =  request.query_params.get('email', 'default').upper()
+    requestPassword =  request.query_params.get('password', 'a')
+  #Get the email if exist  
+    userObjects = User.objects.filter(email__iexact = requestEmail).first()
+    if userObjects is not None:
+        if len(requestPassword.strip()) < 2:
+            return JsonResponse({'message': 'password required'})
+        if userObjects.check_password(requestPassword):
+            historyObjects = History.objects.get(_user = userObjects)
+            CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
+            
+            historySerializer =  HistorySerializer(historyObjects ,many = False)
+            currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = False)
+            userSerializer = UserSerializer(userObjects, many = False)
+            
+            return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': userSerializer.data}, safe=False)
+        
+        else:
+            return JsonResponse({'message': 'Incorrect password'})
+
+    else:
+        return JsonResponse({"message":"user not found", "hint": "add email to the query param"})
+        
+    
+
+
+
+
+
+
+#for the frontend aspect - GET ONE DATA 
+@api_view(['GET', "POST", "PATCH", "PUT"])
+def frontendViewData(request):
+    #check if the query params is empty , if it is return a sleek UI for them to see
+    requestEmail = request.query_params.get('email', 'empty').strip().upper()
+    requestPassword = request.query_params.get('password', 'empty').strip()
+    if requestEmail == "empty" or requestPassword == "empty":
+        return render(request, "api/request_incomplete/viewData_welcome.html" )
+    #mean user have typed correctly clicked email
+    else:
+        #Check if user exist
+        userFilter = User.objects.filter(email__iexact = requestEmail).first()
+        if userFilter is not None:
+            #user exist
+            #check password
+            userObjects = User.objects.get(email__iexact = requestEmail)
+            if userObjects.check_password(requestPassword):
+                #correct password
+                #return user data 
+                historyObjects = History.objects.get(_user = userObjects)
+                CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
+                
+                historySerializer =  HistorySerializer(historyObjects ,many = False)
+                currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = False)
+                userSerializer = UserSerializer(userObjects, many = False)
+                #Filter the password and id out
+                userPersonal = userSerializer.data
+                userPersonal.pop('id', None)
+                userPersonal.pop('password', None)
+                #return Response('s')
+                return render(request, "api/request_incomplete/viewData_success.html", {
+                    'user': userPersonal,
+                    'history': historySerializer.data,
+                    'currentData': currentDataSerializer.data
+                })
+            
+                
+            else:
+                #wrong password
+                return render(request, "api/request_incomplete/viewData_wrong_password.html")
+        
+        else:
+            #user does not exist
+            return  render(request, "api/request_incomplete/viewData_no_user.html")
+        
+        
+
+
+
+
+
+
+
 #To add and update data(except update username and email) to the db,
 @api_view(['POST', 'PATCH'])
-def backupView(request):
+def backupData(request):
     requestUserName =  request.data.get('username', '').strip().upper()
     requestEmail =  request.data.get('email', '').strip().upper()
     requestPassword =  request.data.get('password', '')
@@ -65,86 +152,9 @@ def backupView(request):
 
 
 
-
-
-#To get one data from the db
-@api_view(['GET'])
-def viewData(request):
-    requestEmail =  request.query_params.get('email', 'default').upper()
-    requestPassword =  request.query_params.get('password', 'default')
-  #Get the email if exist  
-    userObjects = User.objects.filter(email__iexact = requestEmail).first()
-    if userObjects is not None:
-        if userObjects.check_password(requestPassword):
-            historyObjects = History.objects.get(_user = userObjects)
-            CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
-            
-            historySerializer =  HistorySerializer(historyObjects ,many = False)
-            currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = False)
-            userSerializer = UserSerializer(userObjects, many = False)
-            
-            return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': userSerializer.data}, safe=False)
-        
-        else:
-            return JsonResponse({'message': 'Incorrect password'})
-
-    else:
-        return Response({"message":"user not found"})
-        #return render(request, "api/request_incomplete/request_incomplete.html")
-    
-
-
-
-
-
-
-#for the frontend aspect - GET ONE DATA 
-@api_view(['GET', "POST", "PATCH", "PUT"])
-def frontendViewData(request):
-    #check if the query params is empty , if it is return a sleek UI for them to see
-    requestEmail = request.query_params.get('email', 'empty').strip().upper()
-    requestPassword = request.query_params.get('password', 'empty').strip()
-    if requestEmail == "empty" or requestPassword == "empty":
-        return render(request, "api/request_incomplete/viewData_welcome.html" )
-    #mean user have typed correctly clicked email
-    else:
-        #Check if user exist
-        userFilter = User.objects.filter(email__iexact = requestEmail).first()
-        if userFilter is not None:
-            #user exist
-            #check password
-            userObjects = User.objects.get(email__iexact = requestEmail)
-            if userObjects.check_password(requestPassword):
-                #correct password
-                #return user data 
-                historyObjects = History.objects.get(_user = userObjects)
-                CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
-                
-                historySerializer =  HistorySerializer(historyObjects ,many = False)
-                currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = False)
-                userSerializer = UserSerializer(userObjects, many = False)
-                #Filter the password and id out
-                userPersonal = userSerializer.data
-                userPersonal.pop('id', None)
-                userPersonal.pop('username', None)
-                userPersonal.pop('password', None)
-                #return Response('s')
-                return render(request, "api/request_incomplete/viewData_success.html", {
-                    'user': userPersonal,
-                    'history': historySerializer.data,
-                    'currentData': currentDataSerializer.data
-                })
-            
-                
-            else:
-                #wrong password
-                return render(request, "api/request_incomplete/viewData_wrong_password.html")
-        
-        else:
-            #user does not exist
-            return  render(request, "api/request_incomplete/viewData_no_user.html")
-        
-        
+@api_view(["GET"])
+def frontendbackupData(request):
+    return render(request, "api/request_incomplete/nopage.html")
 
 
 
@@ -246,6 +256,26 @@ def updatePassword(request):
 
 
 
+@api_view(['PATCH', 'POST', 'GET'])
+def  frontendUpdatePassword(request):
+    requestEmail = request.data.get("email")
+    oldPassword = request.data.get("old_password")
+    newPassword = request.data.get("new_password")
+    #if rrquest have none of the above, welcome them
+    
+    if requestEmail is None:
+        return render(request, "api/request_incomplete/updatePassword_welcome.html")
+    
+    else:
+        return render(request, "api/request_incomplete/updatePassword_welcome.html")
+    
+
+
+
+
+
+
+
 @api_view(['PATCH', 'GET'])
 def updateEmail(request):
     requestOldEMail = request.query_params.get('old_email', '').upper()
@@ -279,9 +309,117 @@ def updateUsername(request):
 
 
 
+# swagger ui clone
+from django.urls import get_resolver
+from django.shortcuts import render
+
+def api_inspector(request):
+    resolver = get_resolver()
+    urls = []
+
+    def extract(patterns, prefix=""):
+        for p in patterns:
+            if hasattr(p, 'url_patterns'):
+                extract(p.url_patterns, prefix + str(p.pattern))
+            else:
+                full_path = prefix + str(p.pattern).strip("/")
+                full_path = full_path.replace("^", "").replace("$", "")
+
+                # ❌ remove admin
+                if full_path.startswith("admin"):
+                    continue
+
+                # ❌ ONLY KEEP JSON ENDPOINTS
+                if not full_path.endswith("json"):
+                    continue
+
+                urls.append(full_path)
+
+    extract(resolver.url_patterns)
+
+    endpoint_data = []
+
+    for url in urls:
+        key = url.split("/")[0]
+
+        endpoint_data.append({
+            "url": url,
+            "full_url": f"/{url}",   # 🔥 for redirection
+            "doc": API_DOC.get(key)
+        })
+
+    return render(request, "api/request_incomplete/api_inspector.html", {
+        "endpoints": endpoint_data
+    })
+
+
+
 
 #This is for the homepage
 @api_view(['GET'])
 def home(request):
     return render(request, 'api/homehtml.html')
 
+
+API_DOC = {
+    "viewData": {
+        "input": "query",
+        "query_params": ["email(string)", "password(string)"],
+        "body": None,
+        "description": "Fetch a single user with history and current data"
+    },
+
+    "backupData": {
+        "method": ["POST", "PATCH"],
+        "input": "body",
+        "query_params": None,
+        "body": ["username(string)", "email(string)", "password(string)", "history(List(dict))", "currentDatahistory(List(dict))"],
+        "description": "Create or update user data, history, and current data"
+    },
+
+    "updatePassword": {
+        "method": ["PATCH", "POST"],
+        "input": "body",
+        "body": ["email", "old_password", "new_password"],
+        "description": "Change user password securely"
+    },
+
+    "updateEmail": {
+        "method": ["PATCH", "GET"],
+        "input": "query",
+        "query_params": ["old_email", "new_email", "password"],
+        "body": None,
+        "description": "Update user email address"
+    },
+
+    "updateUsername": {
+        "method": ["PATCH", "POST"],
+        "input": "body",
+        "body": None,
+        "description": "Update username (not implemented yet)"
+    },
+
+    "viewAllData": {
+        "method": "GET",
+        "input": "none",
+        "query_params": None,
+        "body": None,
+        "description": "Returns all users, history, and current data"
+    },
+
+    "deactivateAccount": {
+        "method": ["DELETE", "GET"],
+        "input": "query",
+        "query_params": ["username", "email", "password"],
+        "body": None,
+        "description": "Deactivate a user account"
+    },
+
+    "deleteAllData": {
+        "method": ["DELETE", "GET"],
+        "input": "query",
+        "query_params": ["go_ahead"],
+        "body": None,
+        "description": "Danger: deletes all users"
+    }
+}

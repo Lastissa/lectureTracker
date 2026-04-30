@@ -8,8 +8,8 @@ urlpatterns = [
     path('viewData/', views.frontendViewData),
     path('viewData/json/', views.viewData),
 
-    path('backupData/', views.backupView),
-    path('backupData/json/', views.backupView),
+    path('backupData/', views.frontendbackupData),
+    path('backupData/json/', views.backupData),
 
     path('deactivateAccount/', views.deactivateAccount),
     path('deactivateAccount/json/', views.deactivateAccount),
@@ -22,7 +22,7 @@ urlpatterns = [
     path('viewAllData/json/', views.viewAllData),
 
     # Updates
-    path('updatePassword/', views.updatePassword),
+    path('updatePassword/', views.frontendUpdatePassword),
     path('updatePassword/json/', views.updatePassword),
 
     path('updateEmail/', views.updateEmail),
@@ -30,4 +30,7 @@ urlpatterns = [
 
     path('updateUsername/', views.updateUsername),
     path('updateUsername/json/', views.updateUsername),
+    
+    #others
+    path('api_doc/', views.api_inspector)
 ]

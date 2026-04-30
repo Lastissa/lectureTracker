@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>API Inspector</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b1220;
+  color: #e2e8f0;
+}
+
+.wrapper {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 30%;
+  background: #111827;
+  padding: 15px;
+  overflow-y: auto;
+  border-right: 1px solid #1f2937;
+}
+
+.endpoint {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #1f2937;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 14px;
+}
+
+.endpoint:hover {
+  background: #38bdf8;
+  color: black;
+}
+
+/* Main */
+.main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.card {
+  background: #111827;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+}
+
+
+
+.floating-home-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999999; /* ensures it's above EVERYTHING */
+  
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  
+  border: none;
+  cursor: pointer;
+  
+  background: #38bdf8;
+  color: #0b1220;
+  font-size: 20px;
+  font-weight: bold;
+  
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.floating-home-btn:hover {
+  transform: scale(1.08);
+  background: #0ea5e9;
+}
+
+.floating-home-btn:active {
+  transform: scale(0.95);
+}
+
+
+
+
+h2, h3 {
+  color: #38bdf8;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: #e2e8f0;
+}
+
+button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  background: #38bdf8;
+  color: black;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #0ea5e9;
+}
+
+.small-btn {
+  background: #1f2937;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+}
+
+.small-btn:hover {
+  border-color: #38bdf8;
+}
+
+.remove-btn {
+  background: #7f1d1d;
+  color: white;
+  margin-top: 5px;
+}
+
+.remove-btn:hover {
+  background: #991b1b;
+}
+
+.label {
+  color: #38bdf8;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.value {
+  color: #cbd5e1;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.doc-box {
+  background: #0f172a;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #1f2937;
+}
+</style>
+</head>
+
+<body>
+<!-- FLOATING BUTTON -->
+<button class="floating-home-btn" onclick="goHome()">
+  ⌂ Home
+</button>
+<div class="wrapper">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h3>JSON Endpoints</h3>
+
+    {% for item in endpoints %}
+      <div class="endpoint" onclick="showEndpoint({{ forloop.counter0 }})">
+        {{ item.url }}
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div id="details">
+      <div class="card">
+        <h3>Select an endpoint</h3>
+        <p>Click an endpoint to inspect how it collects data and test it live.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{{ endpoints|json_script:"endpoint-data" }}
+
+<script>
+const endpoints = JSON.parse(
+  document.getElementById("endpoint-data").textContent
+);
+
+let queryParams = [];
+let bodyParams = [];
+
+function showEndpoint(index) {
+  const data = endpoints[index];
+  const box = document.getElementById("details");
+
+  queryParams = [];
+  bodyParams = [];
+
+  let docHTML = "";
+
+  if (data.doc) {
+    docHTML = `
+      <div class="doc-box">
+        <div class="label">Description</div>
+        <div class="value">${data.doc.description || "No description"}</div>
+
+        <div class="label">Method</div>
+        <div class="value">${data.doc.method || "GET"}</div>
+
+        <div class="label">Input Type</div>
+        <div class="value">${data.doc.input_type || "query / body"}</div>
+
+        <div class="label">Query Params Info</div>
+        <div class="value">${data.doc.query_params || "None"}</div>
+
+        <div class="label">Body Info</div>
+        <div class="value">${data.doc.body || "None"}</div>
+      </div>
+    `;
+  }
+
+  box.innerHTML = `
+    <div class="card">
+      <h2>${data.url}</h2>
+
+      ${docHTML}
+
+      <div class="label">Query Parameters</div>
+      <div id="queryBox"></div>
+      <button class="small-btn" onclick="addQueryField()">+ Add Query Param</button>
+
+      <div class="label">JSON Body</div>
+      <div id="bodyBox"></div>
+      <button class="small-btn" onclick="addBodyField()">+ Add Body Field</button>
+
+      <button onclick="executeRequest('${data.full_url}')">
+        Execute (Stay Here)
+      </button>
+    </div>
+  `;
+}
+
+function addQueryField() {
+  const id = Date.now();
+  queryParams.push(id);
+
+  const box = document.getElementById("queryBox");
+
+  const div = document.createElement("div");
+  div.id = "q_" + id;
+
+  div.innerHTML = `
+    <input id="qk_${id}" placeholder="key">
+    <input id="qv_${id}" placeholder="value">
+    <button class="remove-btn" onclick="removeField('q_${id}')">Remove</button>
+  `;
+
+  box.appendChild(div);
+}
+
+function addBodyField() {
+  const id = Date.now();
+  bodyParams.push(id);
+
+  const box = document.getElementById("bodyBox");
+
+  const div = document.createElement("div");
+  div.id = "b_" + id;
+
+  div.innerHTML = `
+    <input id="bk_${id}" placeholder="key">
+    <input id="bv_${id}" placeholder="value">
+    <button class="remove-btn" onclick="removeField('b_${id}')">Remove</button>
+  `;
+
+  box.appendChild(div);
+}
+
+function removeField(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function executeRequest(baseUrl) {
+  let url = new URL(window.location.origin + baseUrl);
+
+  queryParams.forEach(id => {
+    const key = document.getElementById("qk_" + id)?.value;
+    const val = document.getElementById("qv_" + id)?.value;
+
+    if (key && val) {
+      url.searchParams.append(key, val);
+    }
+  });
+
+  // stay in same tab, no redirect popup/new tab
+  window.location.href = url.toString();
+}
+</script>
+<script>
+function goHome() {
+  // always returns ONLY the base domain (no path, no query, no subdomain logic)
+  window.location.href = window.location.origin;
+}
+</script>
+
+</body>
+</html>
