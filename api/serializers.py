@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import History, CurrentData
+from .models import History, CurrentData, OtpSorage
 from django.contrib.auth.models import User
 
 
@@ -22,4 +22,8 @@ class UserSerializer(ModelSerializer):
         model = User
         fields = ['id','username', 'email', 'password', 'last_login', 'date_joined', 'is_active']
         
-        
+
+class OtpSorageSerializer(ModelSerializer):
+    class Meta:
+        model = OtpSorage
+        fields = "__all__"

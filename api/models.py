@@ -19,3 +19,14 @@ class CurrentData(models.Model):
     
     def __str__(self):
         return "CurrentData"
+        
+        
+
+class OtpSorage(models.Model):
+    email = models.CharField(null= False, blank = False)
+    otp = models.CharField(null = False, blank = False, max_length = 6)
+    otp_sent_time = models.IntegerField()#time.time()
+    otp_unique_id = models.TextField() # a 100 digit unique id ( numbers only)
+    
+    def __str__(self):
+        return "OtpStorage"

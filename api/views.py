@@ -74,7 +74,7 @@ def frontendViewData(request):
                 userPersonal = userSerializer.data
                 userPersonal.pop('id', None)
                 userPersonal.pop('password', None)
-                #return Response('s')
+                
                 return render(request, "api/request_incomplete/viewData_success.html", {
                     'user': userPersonal,
                     'history': historySerializer.data,
@@ -123,18 +123,24 @@ def backupData(request):
            #the user did not inclide username for update
            else:
                 userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now()}, partial = True)
+                print(userserializer)
            if userserializer.is_valid():
                userserializer.save()
+           else:
+               return Response({"message": "userSerializer failed"})
            currenDataObject = CurrentData.objects.get(_user = userObject)
            CurrentDataserializer = CurrentDataSerializer(currenDataObject, data = {'data': requestCurrentData}, partial = True)
            if CurrentDataserializer.is_valid():
                CurrentDataserializer.save()
+           else:
+               return Response({"message": "currentSerializer failed"})
            #update the history data
            historyObject = History.objects.get(_user = userObject)
            Historyserializer = HistorySerializer(historyObject, data = {'data': requestHistory}, partial = True)
            if Historyserializer.is_valid():
                Historyserializer.save()
-
+           else:
+               return Response({"message": "historySerializer failed"})
            return Response({'message': 'updated success'}, status=200)
        else:
            return Response({'message': 'Incorrect password'}, status=401)
@@ -142,7 +148,7 @@ def backupData(request):
     elif userObject is None:
         #check if the username is empty or missing
         if len(requestUserName.strip() )< 1:
-            return Response({"message" : "username required"})
+            return Response({"message" : "username or email required"})
         #Create a new user, currentData and a new history object
         userObject = User.objects.create_user(username= requestUserName.upper(), password= requestPassword, email= requestEmail) 
         historyObject = History.objects.create(
@@ -264,12 +270,37 @@ def deleteAllData(request):
 #    return JsonResponse({'message': 'All data deleted'})
 
 
+import random
+import time
 
 @api_view(['PATCH', 'POST'])
 def otp(request):
     if len(request.data.keys()) < 1:
-        return Response({"message": "email required")
-    requestEmail = request.data.get("email: ")
+        return Response({"message": "email required"})
+        
+    requestEmail = request.data.get("email", "empty")
+    
+    #send otp to the email and save the credentials into the db using time.time(), the validity is only 10 minutes (600 sec)
+    if requestEmail == "empty":
+        return Response ({"message": "Email cannot  be empty"})
+    else:
+        #email is given, check if it is valid.
+        if "@gmail.com" not in requestEmail:
+            return Response({"message": "Not a valid email"})
+        else:
+            #email is valid proceed to send otp
+            numbers = "0123456789"
+            otp = ""
+            unique_id = ""
+            for i in range(6):
+                otp += random.choice(numbers)
+            for i in range(100):
+                unique_id += random.choice(numbers)
+            #otp and unique gen, send both to to frontend and update the otpStorage table
+            #brb
+            
+            
+    
     
     
     
@@ -291,7 +322,8 @@ def updatePassword(request):
         return Response({"message": "invalid email"})
         
     else:
-        #Check password validity
+        #Confirm otp
+        pass
         
         
         #userObject = User.objects.get(email__iexact = requestEmail)
