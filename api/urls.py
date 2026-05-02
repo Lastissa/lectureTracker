@@ -32,5 +32,10 @@ urlpatterns = [
     path('updateUsername/json/', views.updateUsername),
     
     #others
-    path('api_doc/', views.api_inspector)
+    path('api_doc/', views.api_inspector),
+    
+    path('otp/json/', views.otp),
+    path('otp/', views.frontendOtp),
+    
+    
 ]

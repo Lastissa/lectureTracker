@@ -4,11 +4,12 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view, APIView
 from rest_framework.response import Response
 from .serializers import *
-from .models import History, CurrentData
+from .models import History, CurrentData, OtpSorage
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 import datetime as dt
 from django.core.mail import send_mail
+from django.conf import settings
 
 
 
@@ -270,61 +271,152 @@ def deleteAllData(request):
 #    return JsonResponse({'message': 'All data deleted'})
 
 
+
+
+
+
+
 import random
 import time
-
-@api_view(['PATCH', 'POST'])
+@api_view(['GET', 'PATCH', 'POST'])
 def otp(request):
     if len(request.data.keys()) < 1:
         return Response({"message": "email required"})
         
-    requestEmail = request.data.get("email", "empty")
+    requestEmail = request.data.get("email", "empty").strip().upper()
     
     #send otp to the email and save the credentials into the db using time.time(), the validity is only 10 minutes (600 sec)
     if requestEmail == "empty":
         return Response ({"message": "Email cannot  be empty"})
     else:
         #email is given, check if it is valid.
-        if "@gmail.com" not in requestEmail:
+        if "@GMAIL.COM" not in requestEmail:
             return Response({"message": "Not a valid email"})
         else:
-            #email is valid proceed to send otp
+            #email is valid, proceed to send otp
             numbers = "0123456789"
             otp = ""
-            unique_id = ""
+            otp_unique_id = ""
+            for i in range(100):
+                otp_unique_id += random.choice(numbers)
             for i in range(6):
                 otp += random.choice(numbers)
-            for i in range(100):
-                unique_id += random.choice(numbers)
-            #otp and unique gen, send both to to frontend and update the otpStorage table
-            #brb
-            
-            
+            otp_sent_time = time.time()
+
+            #send mail
+            domain = request.build_absolute_uri('/')
+            send_mail(
+        subject="Password Reset OTP",
+        message=f"Use the OTP {otp} sent to reset your password.",
+        from_email=settings.EMAIL_HOST_USER,
+        recipient_list=[requestEmail],
+        html_message=f"""
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>OTP Verification</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+
+  <div style="max-width:500px; margin:40px auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+    
+    <h2 style="text-align:center; color:#333;">Password Reset</h2>
+
+    <p style="color:#555;">Hello,</p>
+
+    <p style="color:#555;">
+      You requested to reset your password. Use the OTP below to proceed.
+    </p>
+
+    <!-- OTP BOXES -->
+    <div style="text-align:center; margin:30px 0;">
+      {"".join([
+        f'<span style="display:inline-block; width:45px; height:55px; line-height:55px; margin:5px; font-size:22px; font-weight:bold; color:#2d89ef; border:1px solid #ddd; border-radius:8px; background:#f9fbff;">{digit}</span>'
+        for digit in otp
+      ])}
+    </div>
+
+    <p style="text-align:center; color:#888;">
+      This OTP expires in <b>10 minutes</b>.
+    </p>
+
+    <!-- BUTTON -->
+    <div style="text-align:center; margin:30px 0;">
+      <a href="{domain}updatePassword/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={otp_sent_time}&email={requestEmail}"
+         style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
+         Reset Password
+      </a>
+    </div>
+
+    <p style="color:#999; font-size:12px; text-align:center;">
+      If you did not request this, please ignore this email.
+    </p>
+
+  </div>
+
+</body>
+</html>
+"""
+    )
+    #bckup to the otpStorage
+            otpObject = OtpSorage.objects.create(email = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id = otp_unique_id)
+            serializer = OtpSorageSerializer(otpObject, many = False)
+            return Response(serializer.data)
+        
+        
+        
     
     
     
     
-    
-    
-    
+   
+#orp frontend 
+@api_view(["GET"])
+def frontendOtp(request):
+    return render(request, "api/request_incomplete/otp_welcome.html")
+
+
+
+
+
+
+
 @api_view(['PATCH', 'POST'])
 def updatePassword(request):
     if len(request.data.keys()) ==0:
-        return Response({"message": "email required!!!"})
-        #if otp is empty, it mean user have not triggered otp sening
-    requestEmail = request.data["email"]
+        return Response({"message": "email required!!!"}) 
+    requestEmail = request.data.get("email" , "empty").trim().upper()
     otp = request.data.get("otp", '')
-    newPassword = request.data.get("new_password", '')
+    otp_sent_time = request.data.get("otp_sent_time", '')#use time.time() to see the diff and check if it don reach 600 diff
+    otp_unique_id = request.data.get("otp_unique_id", '')
+    new_password = request.data.get("new_password", '').strip()
     
     #Check if email exist
-    object = User.objects.filter(email__iexact = requestEmail ).first()
-    if object is None:
-        return Response({"message": "invalid email"})
-        
+    if requestEmail == "UPPER":
+        return Response({"message": "email missing"})
     else:
-        #Confirm otp
-        pass
+        #Check if the credentials exist
+        object = OtpSorage.objects.filter(email__iexact = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id= otp_unique_id).first()
+    if object is None:
+        return Response({"message": "invalid credentials"})
+    else:
+        #credentials is valid, check if time never expire
+        if time.time() - otp_sent_time > 600:
+            return Response({"message": "otp expired"})
+        else:
+            #time never expire , check new password validity.
+            if len(new_password) < 2:
+                return Response({"message" : "new password too short"})
+            else:
+                #road clear
+                userObject = User.objects.get(email__iexact = requestEmail )
+                userObject.set_password(new_password)
+                userObject.save()
+                return Response({"message" : "success"})
+            
         
+    
         
         #userObject = User.objects.get(email__iexact = requestEmail)
 #        if userObject.check_password(oldPassword):
@@ -345,16 +437,7 @@ def updatePassword(request):
 
 @api_view(['PATCH', 'POST', 'GET'])
 def  frontendUpdatePassword(request):
-    requestEmail = request.data.get("email")
-    oldPassword = request.data.get("old_password")
-    newPassword = request.data.get("new_password")
-    #if rrquest have none of the above, welcome them
-    
-    if requestEmail is None:
-        return render(request, "api/request_incomplete/updatePassword_welcome.html")
-    
-    else:
-        return render(request, "api/request_incomplete/updatePassword_welcome.html")
+    pass
     
 
 

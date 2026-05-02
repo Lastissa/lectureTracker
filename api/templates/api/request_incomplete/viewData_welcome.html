@@ -94,6 +94,18 @@ input:focus {
       color: #94a3b8;
       text-align: center;
     }
+.forgot-password {
+    text-align: center;
+    margin-top: 15px;
+    color: #2d89ef;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .forgot-password:hover {
+    opacity: 0.8;
+  }
   </style>
 </head>
 
@@ -132,6 +144,9 @@ input:focus {
     <!-- Back Button -->
     <button class="back-btn" onclick="goBack()">Go Back</button>
 
+<div class="forgot-password" onclick="goToOtp()">
+ <p style="color:#2d89ef"> Forgot Password? </p>
+</div> 
     <div class="note">
       Ensure credentials are correct before submitting.
     </div>
@@ -171,6 +186,10 @@ input:focus {
     function goBack() {
       window.history.back();
     }
+function goToOtp() {
+    const baseUrl = window.location.origin;
+    window.location.href = baseUrl + "/otp/";
+  }
   </script>
 
 </body>
