@@ -10,11 +10,14 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -125,3 +128,12 @@ STATIC_URL = 'static/'
 
 ALLOWED_HOSTS = ["*"]
 # CORS_ALLOW_ALL_ORIGINS = True
+
+#smtp usage
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'lastissa11@gmail.com'
+EMAIL_HOST_PASSWORD = os.getenv('GMAIL_PASSWORD')
+DEFAULT_FROM_EMAIL = 'lastissa11@gmail.com'
+EMAIL_PORT = 465

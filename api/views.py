@@ -8,6 +8,7 @@ from .models import History, CurrentData
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 import datetime as dt
+from django.core.mail import send_mail
 
 
 
@@ -264,11 +265,24 @@ def deleteAllData(request):
 
 
 
-
+@api_view(['PATCH', 'POST'])
+def otp(request):
+    if len(request.data.keys()) < 1:
+        return Response({"message": "email required")
+    requestEmail = request.data.get("email: ")
+    
+    
+    
+    
+    
+    
 @api_view(['PATCH', 'POST'])
 def updatePassword(request):
+    if len(request.data.keys()) ==0:
+        return Response({"message": "email required!!!"})
+        #if otp is empty, it mean user have not triggered otp sening
     requestEmail = request.data["email"]
-    oldPassword = request.data.get("old_password", 'ImpossiblePassword144')
+    otp = request.data.get("otp", '')
     newPassword = request.data.get("new_password", '')
     
     #Check if email exist
@@ -278,14 +292,19 @@ def updatePassword(request):
         
     else:
         #Check password validity
-        userObject = User.objects.get(email__iexact = requestEmail)
-        if userObject.check_password(oldPassword):
-            userObject.set_password(newPassword)
-            userObject.save()
-            return Response({"message": "update password success"})
-        else:
-            return Response({"message": "invalid password"})
-    return Response(f"{object}")
+        
+        
+        #userObject = User.objects.get(email__iexact = requestEmail)
+#        if userObject.check_password(oldPassword):
+#            userObject.set_password(newPassword)
+#            userObject.save()
+#            return Response({"message": "update password success"})
+#        else:
+#            return Response({"message": "invalid password"})
+#    return Response(f"{object}")
+
+
+
 
 
 
