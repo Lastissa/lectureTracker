@@ -112,13 +112,16 @@ def backupData(request):
     if userObject is not None:
        if userObject.check_password(requestPassword):
            #update user
+           #check if the username the user want to use have not been taken
+           userNameCheck= User.objects.filter(username = requestUserName).first()
+           if userNameCheck is not None:
+               return Response({"message": "username is not available"})
            #check if username is not empty to update
-               if len(requestUserName ) > 0:
-           userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now(), 'username' : requestUserName}, partial = True)
+           if len(requestUserName ) > 0:
+                userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now(), 'username' : requestUserName}, partial = True)
            #the user did not inclide username for update
            else:
-               if len(requestUserName ) > 0:
-           userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now()}, partial = True)
+                userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now()}, partial = True)
            if userserializer.is_valid():
                userserializer.save()
            currenDataObject = CurrentData.objects.get(_user = userObject)
