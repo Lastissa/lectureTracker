@@ -29,7 +29,7 @@ urlpatterns = [
     path('updateEmail/json/', views.updateEmail),
 
     path('updateUsername/', views.updateUsername),
-    path('updateUsername/json/', views.updateUsername),
+    path('updateUsername/json/', views.frontendUpdatePassword),
     
     #others
     path('api_doc/', views.api_inspector),

@@ -4,7 +4,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view, APIView
 from rest_framework.response import Response
 from .serializers import *
-from .models import History, CurrentData, OtpSorage
+from .models import *
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 import datetime as dt
@@ -281,26 +281,26 @@ import time
 @api_view(['GET', 'PATCH', 'POST'])
 def otp(request):
     if len(request.data.keys()) < 1:
-        return Response({"message": "email required"})
+        return JsonResponse({"message": "email required"})
         
     requestEmail = request.data.get("email", "empty").strip().upper()
     
     #send otp to the email and save the credentials into the db using time.time(), the validity is only 10 minutes (600 sec)
     if requestEmail == "empty":
-        return Response ({"message": "Email cannot  be empty"})
+        return JsonResponse ({"message": "Email cannot  be empty"})
     else:
         #email is given, check if it is valid.
         if "@GMAIL.COM" not in requestEmail:
-            return Response({"message": "Not a valid email"})
+            return JsonResponse({"message": "Not a valid email"})
         else:
             #email is valid, proceed to send otp
             numbers = "0123456789"
             otp = ""
             otp_unique_id = ""
             for i in range(100):
-                otp_unique_id += random.choice(numbers)
+                otp_unique_id += str(random.choice(numbers))
             for i in range(6):
-                otp += random.choice(numbers)
+                otp +=str(random.choice(numbers))
             otp_sent_time = time.time()
 
             #send mail
@@ -343,7 +343,7 @@ def otp(request):
 
     <!-- BUTTON -->
     <div style="text-align:center; margin:30px 0;">
-      <a href="{domain}updatePassword/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={otp_sent_time}&email={requestEmail}"
+      <a href="{domain}updatePassword/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
          style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
          Reset Password
       </a>
@@ -362,7 +362,10 @@ def otp(request):
     #bckup to the otpStorage
             otpObject = OtpSorage.objects.create(email = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id = otp_unique_id)
             serializer = OtpSorageSerializer(otpObject, many = False)
-            return Response(serializer.data)
+            #no nees to return the unique_id and the otp cos the link reset button will do the righr thing
+            #return JsonResponse(serializer.data)
+            
+            return JsonResponse({"message": "success"})
         
         
         
@@ -371,7 +374,7 @@ def otp(request):
     
     
    
-#orp frontend 
+#otp frontend 
 @api_view(["GET"])
 def frontendOtp(request):
     return render(request, "api/request_incomplete/otp_welcome.html")
@@ -382,19 +385,26 @@ def frontendOtp(request):
 
 
 
-@api_view(['PATCH', 'POST'])
+@api_view(['PATCH', 'POST', 'GET'])
 def updatePassword(request):
-    if len(request.data.keys()) ==0:
+    if len(request.query_params.keys()) ==0:
         return Response({"message": "email required!!!"}) 
-    requestEmail = request.data.get("email" , "empty").trim().upper()
-    otp = request.data.get("otp", '')
-    otp_sent_time = request.data.get("otp_sent_time", '')#use time.time() to see the diff and check if it don reach 600 diff
-    otp_unique_id = request.data.get("otp_unique_id", '')
-    new_password = request.data.get("new_password", '').strip()
+        
+    requestEmail = request.query_params.get("email" , "empty").strip().upper()
+    otp = request.query_params.get("otp", '')
+    otp_sent_time = request.query_params.get("otp_sent_time", 0)#use time.time() to see the diff and check if it don reach 600 diff
+    otp_unique_id = request.query_params.get("otp_unique_id", '')
+    new_password = request.query_params.get("new_password", '').strip()
     
     #Check if email exist
     if requestEmail == "UPPER":
         return Response({"message": "email missing"})
+    elif otp_sent_time == 0:
+        return Response({"message": "otp_sent_time is missing"})
+    elif len(otp_unique_id) < 1:
+        return Response({"message": "otp_unique_id is missing"})
+    elif otp == "":
+        return Response({"message": "otp  is missing"})
     else:
         #Check if the credentials exist
         object = OtpSorage.objects.filter(email__iexact = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id= otp_unique_id).first()
@@ -402,8 +412,8 @@ def updatePassword(request):
         return Response({"message": "invalid credentials"})
     else:
         #credentials is valid, check if time never expire
-        if time.time() - otp_sent_time > 600:
-            return Response({"message": "otp expired"})
+        if time.time() - int(otp_sent_time) > 600:
+            return Response({"message": "otp expired"} )
         else:
             #time never expire , check new password validity.
             if len(new_password) < 2:
@@ -415,20 +425,6 @@ def updatePassword(request):
                 userObject.save()
                 return Response({"message" : "success"})
             
-        
-    
-        
-        #userObject = User.objects.get(email__iexact = requestEmail)
-#        if userObject.check_password(oldPassword):
-#            userObject.set_password(newPassword)
-#            userObject.save()
-#            return Response({"message": "update password success"})
-#        else:
-#            return Response({"message": "invalid password"})
-#    return Response(f"{object}")
-
-
-
 
 
 
@@ -437,7 +433,10 @@ def updatePassword(request):
 
 @api_view(['PATCH', 'POST', 'GET'])
 def  frontendUpdatePassword(request):
-    pass
+    requestEmail = request.query_params.get("email" , "empty").strip().upper()
+    otp = request.query_params.get("otp", '')
+    otp_sent_time = request.query_params.get("otp_sent_time", 0)#use time.time() to see the diff and check if it don reach 600 diff
+    otp_unique_id = request.query_params.get("otp_unique_id", '')
     
 
 

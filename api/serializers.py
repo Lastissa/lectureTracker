@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import History, CurrentData, OtpSorage
+from .models import *
 from django.contrib.auth.models import User
 
 

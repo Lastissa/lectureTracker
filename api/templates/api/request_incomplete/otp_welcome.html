@@ -92,6 +92,12 @@
       color: black;
       font-weight: bold;
       cursor: pointer;
+      position: relative;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .back-btn {
@@ -100,13 +106,47 @@
       color: #e2e8f0;
     }
 
-    .error {
-      color: #f87171;
-      font-size: 12px;
-      text-align: center;
-      margin-top: 10px;
+    /* POPUP (centered & visible) */
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 18px 22px;
+      border-left: 4px solid #38bdf8;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
       display: none;
+      max-width: 350px;
+      font-size: 14px;
+      text-align: center;
+      z-index: 999;
     }
+
+    .error {
+      border-left-color: #f87171;
+    }
+
+    /* SPINNER */
+    .spinner {
+      border: 3px solid #334155;
+      border-top: 3px solid #38bdf8;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
   </style>
 </head>
 
@@ -115,30 +155,80 @@
   <div class="card">
     <h2>Password Reset</h2>
 
-    <p>Enter your email to receive an OTP.</p>
+    <p>Enter your email to receive a password reset link.</p>
 
-    <!-- FORM POST TO SAME PAGE -->
-    <form method="POST">
-      {% csrf_token %}
+    <div class="input-group">
+      <input type="email" id="email" placeholder=" " required>
+      <label for="email">Email Address</label>
+    </div>
 
-      <div class="input-group">
-        <input type="email" name="email" id="email" placeholder=" " required>
-        <label for="email">Email Address</label>
-      </div>
-
-      <button type="submit">Continue</button>
-    </form>
+    <button id="btn" onclick="sendOtp()">Continue</button>
 
     <button class="back-btn" onclick="goBack()">Go Back</button>
-
-    <div class="error" id="errorMsg">
-      Please enter a valid email.
-    </div>
   </div>
+
+  <!-- POPUP -->
+  <div id="popup" class="popup"></div>
 
   <script>
     function goBack() {
       window.history.back();
+    }
+
+    function showPopup(message, isError = false) {
+      const popup = document.getElementById("popup");
+      popup.innerHTML = message;
+      popup.style.display = "block";
+      popup.className = "popup" + (isError ? " error" : "");
+
+      setTimeout(() => {
+        popup.style.display = "none";
+      }, 4000);
+    }
+
+    function setLoading(isLoading) {
+      const btn = document.getElementById("btn");
+      btn.disabled = isLoading;
+
+      if (isLoading) {
+        btn.innerHTML = `<span class="spinner"></span>Processing...`;
+      } else {
+        btn.innerHTML = "Continue";
+      }
+    }
+
+    async function sendOtp() {
+      const email = document.getElementById("email").value;
+
+      if (!email) {
+        showPopup("Please enter a valid email", true);
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await fetch("/otp/json/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: email })
+        });
+
+        const text = await response.text();
+
+        if (response.ok) {
+          showPopup(text);
+        } else {
+          showPopup(text, true);
+        }
+
+      } catch (error) {
+        showPopup("Network error. Try again.", true);
+      }
+
+      setLoading(false);
     }
   </script>
 
