@@ -112,6 +112,12 @@ def backupData(request):
     if userObject is not None:
        if userObject.check_password(requestPassword):
            #update user
+           #check if username is not empty to update
+               if len(requestUserName ) > 0:
+           userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now(), 'username' : requestUserName}, partial = True)
+           #the user did not inclide username for update
+           else:
+               if len(requestUserName ) > 0:
            userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now()}, partial = True)
            if userserializer.is_valid():
                userserializer.save()
