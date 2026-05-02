@@ -130,6 +130,9 @@ def backupData(request):
            return Response({'message': 'Incorrect password'}, status=401)
         
     elif userObject is None:
+        #check if the username is empty or missing
+        if len(requestUserName.strip() )< 1:
+            return Response({"message" : "username required"})
         #Create a new user, currentData and a new history object
         userObject = User.objects.create_user(username= requestUserName.upper(), password= requestPassword, email= requestEmail) 
         historyObject = History.objects.create(
@@ -172,7 +175,31 @@ def viewAllData(request):
     currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = True)
     userSerializer = UserSerializer(userObjects, many = True)
     
+    
     return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'users': userSerializer.data}, safe=False)
+
+
+
+
+
+
+
+#for the frontend aspect -VIEW ALL DATA
+@api_view(["GET"])
+def frontendViewAllData(request):
+    historyObjects = History.objects.all()
+    CurrentDataObjects = CurrentData.objects.all()
+    userObjects = User.objects.all()
+    historySerializer =  HistorySerializer(historyObjects ,many = True)
+    currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = True)
+    userSerializer = UserSerializer(userObjects, many = True)
+    
+    
+    return render(request, "api/request_incomplete/viewAllData_welcome.html", {'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'users': userSerializer.data})
+
+
+
+
 
 
 

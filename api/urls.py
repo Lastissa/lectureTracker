@@ -18,7 +18,7 @@ urlpatterns = [
     path('deleteAllData/', views.deleteAllData),
     path('deleteAllData/json/', views.deleteAllData),
 
-    path('viewAllData/', views.viewAllData),
+    path('viewAllData/', views.frontendViewAllData),
     path('viewAllData/json/', views.viewAllData),
 
     # Updates

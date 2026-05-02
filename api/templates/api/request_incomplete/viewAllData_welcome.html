@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>All Data Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* FLOATING JSON BUTTON */
+.json-danger-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+
+  box-shadow: 0 10px 25px rgba(239,68,68,0.3);
+  transition: all 0.2s ease;
+}
+
+.json-danger-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 14px 35px rgba(239,68,68,0.45);
+}
+
+
+
+
+
+
+/* ================= BASE ================= */
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: #e2e8f0;
+  padding: 20px;
+}
+
+/* ================= HEADER ================= */
+.header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #38bdf8;
+  margin-bottom: 5px;
+}
+
+.header p {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ================= SEARCH ================= */
+.search-box {
+  max-width: 500px;
+  margin: 0 auto 25px auto;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: white;
+  outline: none;
+}
+
+.search-box input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56,189,248,0.2);
+}
+
+/* ================= USER CARD ================= */
+.user-card {
+  background: rgba(17,24,39,0.8);
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+  transition: 0.25s ease;
+}
+
+.user-card:hover {
+  transform: translateY(-3px);
+  border-color: #38bdf8;
+  box-shadow: 0 10px 30px rgba(56,189,248,0.15);
+}
+
+/* HEADER */
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.username {
+  font-size: 18px;
+  color: #38bdf8;
+}
+
+.email {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* STATUS */
+.status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.active {
+  background: rgba(34,197,94,0.15);
+  color: #22c55e;
+}
+
+.inactive {
+  background: rgba(239,68,68,0.15);
+  color: #ef4444;
+}
+
+/* ================= SECTION ================= */
+.section {
+  margin-top: 18px;
+}
+
+.section-title {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* ================= DATA ================= */
+.data-card {
+  background: #020617;
+  border: 1px solid #1f2937;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition: 0.2s;
+}
+
+.data-card:hover {
+  border-color: #334155;
+}
+
+.key {
+  font-size: 11px;
+  color: #38bdf8;
+}
+
+.value {
+  font-size: 13px;
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+/* ================= COLLAPSE ================= */
+.toggle {
+  cursor: pointer;
+  font-size: 12px;
+  color: #38bdf8;
+  margin-bottom: 6px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ================= EMPTY ================= */
+.empty {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ================= ANIMATION ================= */
+.fade-in {
+  animation: fade 0.4s ease;
+}
+
+@keyframes fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>All Users Dashboard</h1>
+  <p>Inspect relational user data, history, and current states</p>
+</div>
+
+<div class="search-box">
+  <input type="text" id="search" placeholder="Search by username or email...">
+</div>
+
+<div id="container"></div>
+
+<!-- Django injected data -->
+{{ users|json_script:"users-data" }}
+{{ history|json_script:"history-data" }}
+{{ currentData|json_script:"current-data" }}
+<button class="json-danger-btn" onclick="goToJson()">
+  JSON
+</button>
+<script>
+const users = JSON.parse(document.getElementById("users-data").textContent);
+const history = JSON.parse(document.getElementById("history-data").textContent);
+const currentData = JSON.parse(document.getElementById("current-data").textContent);
+
+const container = document.getElementById("container");
+
+/* ================= HELPERS ================= */
+function getUserHistory(id) {
+  return history.filter(h => h._user === id);
+}
+
+function getUserCurrent(id) {
+  return currentData.filter(c => c._user === id);
+}
+
+function renderObject(obj) {
+  let html = `<div class="data-card">`;
+  for (let key in obj) {
+    html += `<div class="key">${key}</div>`;
+    html += `<div class="value">${obj[key]}</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+/* ================= BUILD ================= */
+function renderUsers(list) {
+  container.innerHTML = "";
+
+  list.forEach(user => {
+    const hist = getUserHistory(user.id);
+    const curr = getUserCurrent(user.id);
+
+    const card = document.createElement("div");
+    card.className = "user-card fade-in";
+
+    card.innerHTML = `
+      <div class="user-header">
+        <div>
+          <div class="username">${user.username}</div>
+          <div class="email">${user.email}</div>
+        </div>
+        <div class="status ${user.is_active ? 'active' : 'inactive'}">
+          ${user.is_active ? 'ACTIVE' : 'INACTIVE'}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">CURRENT DATA</div>
+        <div id="curr-${user.id}"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">HISTORY</div>
+        <div id="hist-${user.id}"></div>
+      </div>
+    `;
+
+    container.appendChild(card);
+
+    /* CURRENT */
+    const cBox = document.getElementById(`curr-${user.id}`);
+    if (!curr.length) {
+      cBox.innerHTML = `<div class="empty">No current data</div>`;
+    } else {
+      curr.forEach(c => {
+        c.data.forEach(d => {
+          cBox.innerHTML += renderObject(d);
+        });
+      });
+    }
+
+    /* HISTORY */
+    const hBox = document.getElementById(`hist-${user.id}`);
+    if (!hist.length) {
+      hBox.innerHTML = `<div class="empty">No history</div>`;
+    } else {
+      hist.forEach((h, i) => {
+        const id = `h-${user.id}-${i}`;
+
+        let html = `
+          <div class="data-card">
+            <div class="toggle" onclick="toggle('${id}')">
+              View Record ${i + 1}
+            </div>
+            <div id="${id}" class="hidden">
+        `;
+
+        h.data.forEach(d => {
+          html += renderObject(d);
+        });
+
+        html += `</div></div>`;
+        hBox.innerHTML += html;
+      });
+    }
+  });
+}
+
+/* ================= SEARCH ================= */
+document.getElementById("search").addEventListener("input", e => {
+  const val = e.target.value.toLowerCase();
+
+  const filtered = users.filter(u =>
+    u.username.toLowerCase().includes(val) ||
+    u.email.toLowerCase().includes(val)
+  );
+
+  renderUsers(filtered);
+});
+
+/* ================= TOGGLE ================= */
+function toggle(id) {
+  document.getElementById(id).classList.toggle("hidden");
+}
+
+/* INIT */
+renderUsers(users);
+
+
+
+
+
+
+function goToJson() {
+  const base = window.location.origin;
+  window.location.href = base + "/viewAllData/json/";
+}
+</script>
+
+</body>
+</html>
