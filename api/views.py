@@ -488,7 +488,8 @@ def otp(request):
                     #bckup to the otpStorage
                 otpObject = OtpSorage.objects.create(email = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id = otp_unique_id)
                 r = OtpSorageSerializer(otpObject, many = False)
-            
+
+                return JsonResponse({"message": "success"})
             except Exception as e:
                 #Incase there was any error, send me the error and tell user to retry later
                 send_mail(
@@ -500,7 +501,7 @@ def otp(request):
                 return JsonResponse({"message": "error 500"})
 
             
-            return JsonResponse({"message": "success"})
+            
         
         
         
