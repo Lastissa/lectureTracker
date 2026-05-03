@@ -138,6 +138,3 @@ EMAIL_HOST_PASSWORD = os.getenv('GMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = 'lastissa11@gmail.com'
 EMAIL_PORT = 465
 
-# This prints to the Vercel 'Logs' tab during startup
-print(f"DEBUG: Password length is {len(os.getenv('GMAIL_PASSWORD', ''))}")
-

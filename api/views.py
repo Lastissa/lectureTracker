@@ -491,6 +491,8 @@ def otp(request):
 
                 return JsonResponse({"message": "success"})
             except Exception as e:
+                # This prints to the Vercel 'Logs' tab during startup
+                print(f"DEBUG: Password length is {len(os.getenv('GMAIL_PASSWORD', ''))}")
                 return JsonResponse({"message": "error, 500"})#This will usually happens if the os.get() in the settings is not getting the gmail password
 
             
