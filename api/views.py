@@ -584,7 +584,7 @@ def  frontendUpdatePassword(request):
         return render(request, "api/request_incomplete/updatePassword_acces_not_allowed.html")
     #do a quick validity check with the otp_sent_time and see of the otp never expire, it it has, return "link expired" 
     else:
-      if (time.time() - int(otp_sent_time)) == 600:
+      if (time.time() - int(otp_sent_time)) > 600:
           return render(request, "api/request_incomplete/updatePassword_link_expired.html")
       
     #if no data is missing and the otp still valid, return a html where the user input the otp and new password and valodate it against db
