@@ -137,3 +137,5 @@ EMAIL_HOST_USER = 'lastissa11@gmail.com'
 EMAIL_HOST_PASSWORD = "zbnt bska jpzh yojm" #os.getenv('GMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = 'lastissa11@gmail.com'
 EMAIL_PORT = 465
+
+STATIC_URL = '/static/'
