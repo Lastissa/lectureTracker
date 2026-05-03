@@ -106,7 +106,6 @@
       color: #e2e8f0;
     }
 
-    /* POPUP (centered & visible) */
     .popup {
       position: fixed;
       top: 50%;
@@ -129,7 +128,6 @@
       border-left-color: #f87171;
     }
 
-    /* SPINNER */
     .spinner {
       border: 3px solid #334155;
       border-top: 3px solid #38bdf8;
@@ -153,9 +151,9 @@
 <body>
 
   <div class="card">
-    <h2>Password Reset</h2>
+    <h2 id="headingText">Password Reset</h2>
 
-    <p>Enter your email to receive a password reset link.</p>
+    <p id="subText">Enter your email to receive a <span id="dynamicText">password</span> link.</p>
 
     <div class="input-group">
       <input type="email" id="email" placeholder=" " required>
@@ -167,7 +165,6 @@
     <button class="back-btn" onclick="goBack()">Go Back</button>
   </div>
 
-  <!-- POPUP -->
   <div id="popup" class="popup"></div>
 
   <script>
@@ -208,7 +205,11 @@
       setLoading(true);
 
       try {
-        const response = await fetch("/otp/json/", {
+        // Append current query params to /otp/json/
+        const currentParams = window.location.search;
+        const url = `/otp/json/${currentParams}`;
+
+        const response = await fetch(url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -230,6 +231,21 @@
 
       setLoading(false);
     }
+
+    // HANDLE DJANGO CONTEXT VARIABLE
+    (function () {
+      const heading = "{{ heading|default:'' }}";
+      const headingEl = document.getElementById("headingText");
+      const dynamicTextEl = document.getElementById("dynamicText");
+
+      if (heading && heading.trim() !== "") {
+        headingEl.textContent = heading;
+        dynamicTextEl.textContent = heading.toLowerCase();
+      } else {
+        headingEl.textContent = "No Param";
+        dynamicTextEl.textContent = "null";
+      }
+    })();
   </script>
 
 </body>
