@@ -497,7 +497,8 @@ def otp(request):
                 return JsonResponse({"message": "success"})
             except Exception as e:
                 # This prints to the Vercel 'Logs' tab during startup
-                return JsonResponse({"message": "error, 500"})#This will usually happens if the os.get() in the settings is not getting the gmail password
+                print(f"Error by ope: {e}")
+                return JsonResponse({"message": "error 500"})#This will usually happens if the os.get() in the settings is not getting the gmail password
 
             
             
