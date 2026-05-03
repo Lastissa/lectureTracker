@@ -491,14 +491,7 @@ def otp(request):
 
                 return JsonResponse({"message": "success"})
             except Exception as e:
-                #Incase there was any error, send me the error and tell user to retry later
-                send_mail(
-                    subject="OTP SEND ERROR TO MYSELF FROM LECTURE TRACKER",
-                    message=f"{requestEmail} have issue getting their otp while atttempt to '{requestHeading}' , below is the error stack that happened \n\n\n {e}",
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=["lastissa11@gmail.com"],
-                )
-                return JsonResponse({"message": "error 500"})
+                return JsonResponse({"message": "error, 500"})#This will usually happens if the os.get() in the settings is not getting the gmail password
 
             
             
