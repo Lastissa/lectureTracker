@@ -307,128 +307,71 @@ def otp(request):
 
             #send mail
             requestHeading= request.query_params.get("heading" , "").upper()
+            #use try cos if any error show, send the mail to me istead
+            try:
+                #mail for resettingusername only
+                if requestHeading == "USERNAME RESET":
+                    domain = request.build_absolute_uri('/')
+                    send_mail(
+                subject="Username Reset OTP",
+                message=f"Use the OTP {otp} sent to reset your Username.",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[requestEmail],
+                html_message=f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="UTF-8">
+        <title>OTP Verification</title>
+        </head>
+        <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+        
+        <div style="max-width:500px; margin:40px auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
             
-            #mail for resettingusername only
-            if requestHeading == "USERNAME RESET":
-                domain = request.build_absolute_uri('/')
-                send_mail(
-            subject="Username Reset OTP",
-            message=f"Use the OTP {otp} sent to reset your Username.",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[requestEmail],
-            html_message=f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>OTP Verification</title>
-    </head>
-    <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
-    
-      <div style="max-width:500px; margin:40px auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+            <h2 style="text-align:center; color:#333;">Username Reset</h2>
         
-        <h2 style="text-align:center; color:#333;">Username Reset</h2>
-    
-        <p style="color:#555;">Hello,</p>
-    
-        <p style="color:#555;">
-          You requested to reset your Username. Use the OTP below to proceed.
-        </p>
-    
-        <!-- OTP BOXES -->
-        <div style="text-align:center; margin:30px 0;">
-          {"".join([
-            f'<span style="display:inline-block; width:45px; height:55px; line-height:55px; margin:5px; font-size:22px; font-weight:bold; color:#2d89ef; border:1px solid #ddd; border-radius:8px; background:#f9fbff;">{digit}</span>'
-            for digit in otp
-          ])}
-        </div>
-    
-        <p style="text-align:center; color:#888;">
-          This OTP expires in <b>10 minutes</b>.
-        </p>
-    
-        <!-- BUTTON -->
-        <div style="text-align:center; margin:30px 0;">
-          <a href="{domain}updateUsername/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
-             style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
-             Reset Username
-          </a>
-        </div>
-    
-        <p style="color:#999; font-size:12px; text-align:center;">
-          If you did not request this, please ignore this email.
-        </p>
-    
-      </div>
-    
-    </body>
-    </html>
-    """
-        )
+            <p style="color:#555;">Hello,</p>
         
-            #mail for resetting email only
-            elif requestHeading == "EMAIL RESET":
-                domain = request.build_absolute_uri('/')
-                send_mail(
-        subject="Email Reset OTP",
-        message=f"Use the OTP {otp} sent to reset your password.",
-        from_email=settings.EMAIL_HOST_USER,
-        recipient_list=[requestEmail],
-        html_message=f"""
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>OTP Verification</title>
-</head>
-<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
-
-  <div style="max-width:500px; margin:40px auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
-    
-    <h2 style="text-align:center; color:#333;">Email Reset</h2>
-
-    <p style="color:#555;">Hello,</p>
-
-    <p style="color:#555;">
-      You requested to reset your email. Use the OTP below to proceed.
-    </p>
-
-    <!-- OTP BOXES -->
-    <div style="text-align:center; margin:30px 0;">
-      {"".join([
-        f'<span style="display:inline-block; width:45px; height:55px; line-height:55px; margin:5px; font-size:22px; font-weight:bold; color:#2d89ef; border:1px solid #ddd; border-radius:8px; background:#f9fbff;">{digit}</span>'
-        for digit in otp
-      ])}
-    </div>
-
-    <p style="text-align:center; color:#888;">
-      This OTP expires in <b>10 minutes</b>.
-    </p>
-
-    <!-- BUTTON -->
-    <div style="text-align:center; margin:30px 0;">
-      <a href="{domain}updateEmail/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
-         style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
-         Reset Email
-      </a>
-    </div>
-
-    <p style="color:#999; font-size:12px; text-align:center;">
-      If you did not request this, please ignore this email.
-    </p>
-
-  </div>
-
-</body>
-</html>
-"""
-    )
-    
-            #mail for resetting password only
-            elif requestHeading == "PASSWORD RESET":
-                domain = request.build_absolute_uri('/')
-                send_mail(
-            subject="Password Reset OTP",
+            <p style="color:#555;">
+            You requested to reset your Username. Use the OTP below to proceed.
+            </p>
+        
+            <!-- OTP BOXES -->
+            <div style="text-align:center; margin:30px 0;">
+            {"".join([
+                f'<span style="display:inline-block; width:45px; height:55px; line-height:55px; margin:5px; font-size:22px; font-weight:bold; color:#2d89ef; border:1px solid #ddd; border-radius:8px; background:#f9fbff;">{digit}</span>'
+                for digit in otp
+            ])}
+            </div>
+        
+            <p style="text-align:center; color:#888;">
+            This OTP expires in <b>10 minutes</b>.
+            </p>
+        
+            <!-- BUTTON -->
+            <div style="text-align:center; margin:30px 0;">
+            <a href="{domain}updateUsername/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
+                style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
+                Reset Username
+            </a>
+            </div>
+        
+            <p style="color:#999; font-size:12px; text-align:center;">
+            If you did not request this, please ignore this email.
+            </p>
+        
+        </div>
+        
+        </body>
+        </html>
+        """
+            )
+            
+                #mail for resetting email only
+                elif requestHeading == "EMAIL RESET":
+                    domain = request.build_absolute_uri('/')
+                    send_mail(
+            subject="Email Reset OTP",
             message=f"Use the OTP {otp} sent to reset your password.",
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[requestEmail],
@@ -436,60 +379,126 @@ def otp(request):
     <!DOCTYPE html>
     <html>
     <head>
-      <meta charset="UTF-8">
-      <title>OTP Verification</title>
+    <meta charset="UTF-8">
+    <title>OTP Verification</title>
     </head>
     <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
-    
-      <div style="max-width:500px; margin:40px auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+
+    <div style="max-width:500px; margin:40px auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
         
-        <h2 style="text-align:center; color:#333;">Password Reset</h2>
-    
+        <h2 style="text-align:center; color:#333;">Email Reset</h2>
+
         <p style="color:#555;">Hello,</p>
-    
+
         <p style="color:#555;">
-          You requested to reset your password. Use the OTP below to proceed.
+        You requested to reset your email. Use the OTP below to proceed.
         </p>
-    
+
         <!-- OTP BOXES -->
         <div style="text-align:center; margin:30px 0;">
-          {"".join([
+        {"".join([
             f'<span style="display:inline-block; width:45px; height:55px; line-height:55px; margin:5px; font-size:22px; font-weight:bold; color:#2d89ef; border:1px solid #ddd; border-radius:8px; background:#f9fbff;">{digit}</span>'
             for digit in otp
-          ])}
+        ])}
         </div>
-    
+
         <p style="text-align:center; color:#888;">
-          This OTP expires in <b>10 minutes</b>.
+        This OTP expires in <b>10 minutes</b>.
         </p>
-    
+
         <!-- BUTTON -->
         <div style="text-align:center; margin:30px 0;">
-          <a href="{domain}updatePassword/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
-             style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
-             Reset Password
-          </a>
+        <a href="{domain}updateEmail/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
+            style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
+            Reset Email
+        </a>
         </div>
-    
+
         <p style="color:#999; font-size:12px; text-align:center;">
-          If you did not request this, please ignore this email.
+        If you did not request this, please ignore this email.
         </p>
-    
-      </div>
-    
+
+    </div>
+
     </body>
     </html>
     """
         )
-            #the requestHeading did not return something i recognize
-            else:
-                return JsonResponse({"message": "Failure"})
-                
-    #bckup to the otpStorage
-            otpObject = OtpSorage.objects.create(email = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id = otp_unique_id)
-            serializer = OtpSorageSerializer(otpObject, many = False)
-            #no nees to return the unique_id and the otp cos the link reset button will do the righr thing
-            #return JsonResponse(serializer.data)
+        
+                #mail for resetting password only
+                elif requestHeading == "PASSWORD RESET":
+                    domain = request.build_absolute_uri('/')
+                    send_mail(
+                subject="Password Reset OTP",
+                message=f"Use the OTP {otp} sent to reset your password.",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[requestEmail],
+                html_message=f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="UTF-8">
+        <title>OTP Verification</title>
+        </head>
+        <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+        
+        <div style="max-width:500px; margin:40px auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+            
+            <h2 style="text-align:center; color:#333;">Password Reset</h2>
+        
+            <p style="color:#555;">Hello,</p>
+        
+            <p style="color:#555;">
+            You requested to reset your password. Use the OTP below to proceed.
+            </p>
+        
+            <!-- OTP BOXES -->
+            <div style="text-align:center; margin:30px 0;">
+            {"".join([
+                f'<span style="display:inline-block; width:45px; height:55px; line-height:55px; margin:5px; font-size:22px; font-weight:bold; color:#2d89ef; border:1px solid #ddd; border-radius:8px; background:#f9fbff;">{digit}</span>'
+                for digit in otp
+            ])}
+            </div>
+        
+            <p style="text-align:center; color:#888;">
+            This OTP expires in <b>10 minutes</b>.
+            </p>
+        
+            <!-- BUTTON -->
+            <div style="text-align:center; margin:30px 0;">
+            <a href="{domain}updatePassword/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
+                style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
+                Reset Password
+            </a>
+            </div>
+        
+            <p style="color:#999; font-size:12px; text-align:center;">
+            If you did not request this, please ignore this email.
+            </p>
+        
+        </div>
+        
+        </body>
+        </html>
+        """
+            )
+                #the requestHeading did not return something i recognize
+                else:
+                    return JsonResponse({"message": "Failure"})
+                    #bckup to the otpStorage
+                otpObject = OtpSorage.objects.create(email = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id = otp_unique_id)
+                r = OtpSorageSerializer(otpObject, many = False)
+            
+            except Exception as e:
+                #Incase there was any error, send me the error and tell user to retry later
+                send_mail(
+                    subject="OTP SEND ERROR TO MYSELF FROM LECTURE TRACKER",
+                    message=f"{requestEmail} have issue getting their otp while atttempt to '{requestHeading}' , below is the error stack that happened \n\n\n {e}",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=["lastissa11@gmail.com"],
+                )
+                return JsonResponse({"message": "error 500"})
+
             
             return JsonResponse({"message": "success"})
         
