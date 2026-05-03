@@ -300,6 +300,9 @@ def otp(request):
         else:
             #email is valid, proceed to send otp
             #but what kind of otp ? the query_params(requestHeading) handle that by knowing wether we send an email for password, email or username reset or none
+            #check if user exist:
+            if User.objects.filter(email__iexact = requestEmail ).first() == None:
+                    return JsonResponse({"message": "no user"})
             
             numbers = "0123456789"
             otp = ""
