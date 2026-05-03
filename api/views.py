@@ -294,7 +294,7 @@ def otp(request):
             return JsonResponse({"message": "Not a valid email"})
         else:
             #email is valid, proceed to send otp
-            #but what kind of otp ? the query_params handle that
+            #but what kind of otp ? the query_params(requestHeading) handle that by knowing wether we send an email for password, email or username reset or none
             
             numbers = "0123456789"
             otp = ""
@@ -308,7 +308,7 @@ def otp(request):
             #send mail
             requestHeading= request.query_params.get("heading" , "").upper()
             
-            #mail for reseting username only
+            #mail for resettingusername only
             if requestHeading == "USERNAME RESET":
                 domain = request.build_absolute_uri('/')
                 send_mail(
@@ -424,7 +424,7 @@ def otp(request):
 """
     )
     
-            #email for paswore reset only
+            #mail for resetting password only
             elif requestHeading == "PASSWORD RESET":
                 domain = request.build_absolute_uri('/')
                 send_mail(
@@ -495,8 +495,12 @@ def otp(request):
         
         
         
-    
-    
+#Temprorary
+@api_view(["GET"])
+def temp(request):
+    object = OtpSorage.objects.all()
+    serializer = OtpSorageSerializer(object, many = True)
+    return Response(serializer.data)
     
     
    

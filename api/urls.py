@@ -37,5 +37,6 @@ urlpatterns = [
     path('otp/json/', views.otp),
     path('otp/', views.frontendOtp),
     
-    
+    #Delet soon, just for experiment
+    path("temp1/", views.temp)
 ]
