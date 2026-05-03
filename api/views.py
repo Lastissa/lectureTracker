@@ -511,7 +511,10 @@ def otp(request):
 #Temprorary
 @api_view(["GET"])
 def temp(request):
+    del_all = request.query_params.get("del")#clear the table
     object = OtpSorage.objects.all()
+    if del_all is not None:
+        object.delete()
     serializer = OtpSorageSerializer(object, many = True)
     return Response(serializer.data)
     
@@ -567,6 +570,8 @@ def updatePassword(request):
                 userObject = User.objects.get(email__iexact = requestEmail )
                 userObject.set_password(new_password)
                 userObject.save()
+                #render the otp useless
+                object.delete()
                 return Response({"message" : "success"})
             
 
