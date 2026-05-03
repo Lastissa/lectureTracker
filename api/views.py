@@ -515,6 +515,7 @@ def temp(request):
     object = OtpSorage.objects.all()
     if del_all is not None:
         object.delete()
+        return ({"message" : "delete all success"})
     serializer = OtpSorageSerializer(object, many = True)
     return Response(serializer.data)
     
