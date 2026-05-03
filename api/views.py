@@ -150,7 +150,12 @@ def backupData(request):
         #check if the username is empty or missing
         if len(requestUserName.strip() )< 1:
             return Response({"message" : "username or email required"})
+        elif "@GMAIL.COM" not in requestEmail.upper():
+            return Response({"message" : "email invalid"})
         #Create a new user, currentData and a new history object
+        #Check if password is empty
+        if len(requestPassword) < 2:
+            return Response({"message": "Password required"})
         userObject = User.objects.create_user(username= requestUserName.upper(), password= requestPassword, email= requestEmail) 
         historyObject = History.objects.create(
             data = requestHistory,
