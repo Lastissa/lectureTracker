@@ -321,7 +321,7 @@ def otp(request):
                 if requestHeading == "USERNAME RESET":
                     domain = request.build_absolute_uri('/')
                     send_mail(
-                subject="Username Reset OTP",
+                subject="USERNAME RESET OTP FROM LECTURE TRACKERS",
                 message=f"Use the OTP {otp} sent to reset your Username.",
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[requestEmail],
@@ -379,7 +379,7 @@ def otp(request):
                 elif requestHeading == "EMAIL RESET":
                     domain = request.build_absolute_uri('/')
                     send_mail(
-            subject="Email Reset OTP",
+            subject="EMAIL RESET OTP FROM LECTURE TRACKERS",
             message=f"Use the OTP {otp} sent to reset your password.",
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[requestEmail],
@@ -437,7 +437,7 @@ def otp(request):
                 elif requestHeading == "PASSWORD RESET":
                     domain = request.build_absolute_uri('/')
                     send_mail(
-                subject="Password Reset OTP",
+                subject="PASSWORD RESET OTP FROM LECTURE TRACKERS",
                 message=f"Use the OTP {otp} sent to reset your password.",
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[requestEmail],
@@ -538,14 +538,14 @@ def updatePassword(request):
     if len(request.query_params.keys()) ==0:
         return Response({"message": "email required!!!"}) 
         
-    requestEmail = request.query_params.get("email" , "empty").strip().upper()
+    requestEmail = request.query_params.get("email" , "EMPTY").strip().upper()
     otp = request.query_params.get("otp", '')
     otp_sent_time = request.query_params.get("otp_sent_time", 0)#use time.time() to see the diff and check if it don reach 600 diff
     otp_unique_id = request.query_params.get("otp_unique_id", '')
     new_password = request.query_params.get("new_password", '').strip()
     
     #Check if email exist
-    if requestEmail == "UPPER":
+    if requestEmail == "EMPTY":
         return Response({"message": "email missing"})
     elif otp_sent_time == 0:
         return Response({"message": "otp_sent_time is missing"})
@@ -565,7 +565,7 @@ def updatePassword(request):
         else:
             #time never expire , check new password validity.
             if len(new_password) < 2:
-                return Response({"message" : "new password too short"})
+                return Response({"message" : "new_password too short"})
             else:
                 #road clear
                 userObject = User.objects.get(email__iexact = requestEmail )
@@ -573,6 +573,29 @@ def updatePassword(request):
                 userObject.save()
                 #render the otp useless
                 object.delete()
+                try:
+                    send_mail(
+                        subject="""PASSWORD RESET MESSAGE FROM LECTURE TRACKERS",
+                message=f"Subject: Password Updated Successfully – LectureTracker
+
+Dear User,
+
+Your **LectureTracker** password was recently updated. If you made this change, you can safely ignore this email.
+
+### **Did you not make this request?**
+If you did **not** reset your password, it means your account may be compromised. To secure your account and prevent unauthorized access, please click the button below to reset your password immediately:
+
+[Reset Your Password](https://lecture-tracker-omega.vercel.app/otp/?heading=PASSWORD%20RESET)
+
+For your security, please do not share your login credentials or OTPs with anyone.
+
+Best regards,
+The LectureTracker Team""",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[requestEmail],
+                    )
+                except:
+                    pass#if the send_email fail silently, just comot eye
                 return Response({"message" : "success"})
             
 
@@ -608,27 +631,41 @@ def  frontendUpdatePassword(request):
 
 @api_view(['PATCH', 'GET'])
 def updateEmail(request):
-    requestOldEMail = request.query_params.get('old_email', '').upper()
-    requestNewEMail = request.query_params.get('new_email', '').upper()
-    requestPassword = request.query_params.get('password', '')
-    
-    #Check if email is in system
-    try:
-        userObject = User.objects.get(email = requestOldEMail)
-        if userObject.check_password(requestPassword):
-            userserializer = UserSerializer(data = {'email': requestNewEMail}, partial = True)
-            if userserializer.is_valid():
-                userserializer.save()
-                return JsonResponse({'message': 'Email updated successfully'})
-        else:
-            return JsonResponse({'message': 'Incorrect password'})
-    except User.DoesNotExist:
-        return JsonResponse({'message': 'User not found'})
-    
-    except Exception as e:
-        return JsonResponse({'message': 'An error occurred', 'error': str(e)}, status=500)
+    if len(request.query_params.keys()) ==0:
+        return Response({"message": "email required!!!"}) 
         
-
+    requestEmail = request.query_params.get("email" , "empty").strip().upper()
+    otp = request.query_params.get("otp", '')
+    otp_sent_time = request.query_params.get("otp_sent_time", 0)#use time.time() to see the diff and check if it don reach 600 diff
+    otp_unique_id = request.query_params.get("otp_unique_id", '')
+    new_email = request.query_params.get("new_email", '').strip()
+    
+    #Check if email exist in the query_params
+    if requestEmail == "EMPTY":
+        return Response({"message": "email missing"})
+    elif otp_sent_time == 0:
+        return Response({"message": "otp_sent_time is missing"})
+    elif len(otp_unique_id) < 1:
+        return Response({"message": "otp_unique_id is missing"})
+    elif otp == "":
+        return Response({"message": "otp  is missing"})
+    else:
+        #all the data i need from the query_params is complete
+        
+        #check if the requestEmail exist in the db
+        userExist = User.objects.filter(email_iexact = requestEmail).first()
+        if userExist is None:
+            return Response({"message": "no user"})
+        #Validate the otp and the otp_unique_id and als the otp_sent_time
+        
+        return Response({"message": "work in progress"})
+    
+        #User exist , now check if the new email user wanna change to is taken
+        
+        
+    
+    
+    
 
 
 

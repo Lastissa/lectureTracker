@@ -2,195 +2,337 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>View Data</title>
+  <title>LectureTracker | Secure Access</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Lucide Icons for a modern touch -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    body {
+    :root {
+      --bg: #020617;
+      --card-bg: rgba(15, 23, 42, 0.8);
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.4);
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #e2e8f0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Subtle Animated Background Blobs */
+    .blob {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: var(--accent);
+      filter: blur(100px);
+      border-radius: 50%;
+      z-index: -1;
+      opacity: 0.1;
+      animation: float 20s infinite alternate;
+    }
+
+    @keyframes float {
+      from { transform: translate(-20%, -20%); }
+      to { transform: translate(20%, 20%); }
     }
 
     .card {
-      background: #111827;
-      padding: 30px;
-      border-radius: 14px;
-      width: 90%;
-      max-width: 420px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      padding: 40px;
+      border-radius: 24px;
+      width: 95%;
+      max-width: 440px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h2 {
-      color: #38bdf8;
-      margin-bottom: 10px;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      background: linear-gradient(to right, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     p {
       font-size: 14px;
-      color: #cbd5e1;
-      margin-bottom: 20px;
-      line-height: 1.5;
+      color: var(--text-dim);
+      margin-bottom: 30px;
+      line-height: 1.6;
     }
 
-input {
-  width: 100%;
-  padding: 12px 14px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: 1px solid #334155;
-  background: #020617;
-  color: #e2e8f0;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
 
-input::placeholder {
-  color: #64748b;
-}
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+      color: white;
+      font-size: 15px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+    }
 
-input:focus {
-  border: 1px solid #38bdf8;
-  background: #020617;
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-}
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .toggle-pass {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Main Action Button */
+    .btn-container {
+      position: relative;
+      height: 50px;
+      margin-top: 25px;
+    }
 
     button {
       width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      background: #38bdf8;
+      height: 100%;
+      border-radius: 12px;
       border: none;
-      border-radius: 8px;
-      color: black;
-      font-weight: bold;
+      font-weight: 700;
       cursor: pointer;
-      transition: 0.2s;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
     }
 
-    button:hover {
-      background: #0ea5e9;
+    .primary-btn {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .primary-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px var(--accent-glow);
+    }
+
+    .primary-btn:disabled {
+      background: #1e293b;
+      color: #475569;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Spinner Design */
+    .loader {
+      display: none;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(56, 189, 248, 0.2);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .back-btn {
-      background: #334155;
-      color: #e2e8f0;
+      margin-top: 12px;
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
     }
 
     .back-btn:hover {
-      background: #475569;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+
+    .forgot-password {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--accent);
+      text-decoration: none;
+      display: block;
+      transition: opacity 0.2s;
+      cursor: pointer;
+    }
+
+    .forgot-password:hover {
+      opacity: 0.7;
+      text-decoration: underline;
     }
 
     .note {
       font-size: 12px;
-      margin-top: 15px;
-      color: #94a3b8;
+      margin-top: 25px;
+      color: #475569;
       text-align: center;
     }
-.forgot-password {
-    text-align: center;
-    margin-top: 15px;
-    color: #2d89ef;
-    text-decoration: underline;
-    cursor: pointer;
-    font-size: 14px;
-  }
 
-  .forgot-password:hover {
-    opacity: 0.8;
-  }
+    /* Success state for button just before redirect */
+    .btn-success {
+      background: #10b981 !important;
+      color: white !important;
+    }
   </style>
 </head>
 
 <body>
+  <div class="blob"></div>
 
   <div class="card">
-    <h2>View User Data</h2>
+    <h2>Access Data</h2>
+    <p>Verify your identity to retrieve encrypted records from the LectureTracker vault.</p>
 
-    <p>
-      This page is used to retrieve user data from the backend system.
-      Please provide valid authentication credentials (email and password)
-      to proceed with the request.
-    </p>
+    <div class="input-group">
+      <input type="email" id="email" placeholder="Email Address" oninput="validateForm()">
+    </div>
 
-    <input type="email" id="email" placeholder="Enter email" required>
-   <div style="position: relative;">
-  <input type="password" id="password" placeholder="Enter password" required>
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Security Password" oninput="validateForm()">
+      <span class="toggle-pass" id="toggleText" onclick="togglePassword()">Show</span>
+    </div>
 
-  <span onclick="togglePassword()"
-        id="toggleText"
-        style="
-          position:absolute;
-          right:10px;
-          top:50%;
-          transform:translateY(-50%);
-          cursor:pointer;
-          font-size:12px;
-          color:#38bdf8;
-          user-select:none;
-        ">
-    Show
-  </span>
-</div>
-    <button onclick="redirectUser()">Fetch Data</button>
+    <div class="btn-container">
+      <button id="fetchBtn" class="primary-btn" onclick="handleFetch()" disabled>
+        <span id="btnText">Fetch Records</span>
+        <div id="btnLoader" class="loader"></div>
+      </button>
+    </div>
 
-    <!-- Back Button -->
-    <button class="back-btn" onclick="goBack()">Go Back</button>
+    <button class="back-btn" onclick="goBack()">
+      Cancel Request
+    </button>
 
-<div class="forgot-password" onclick="goToOtp()">
- <p style="color:#2d89ef"> Forgot Password? </p>
-</div> 
+    <a class="forgot-password" onclick="goToOtp()">Forgot password?</a>
+
     <div class="note">
-      Ensure credentials are correct before submitting.
+      <i data-lucide="shield-check" style="width:12px; height:12px; vertical-align: middle; margin-right:4px;"></i>
+      End-to-end encrypted session
     </div>
   </div>
 
   <script>
-  function togglePassword() {
-  const input = document.getElementById("password");
-  const toggle = document.getElementById("toggleText");
+    // Initialize Lucide Icons
+    lucide.createIcons();
 
-  if (input.type === "password") {
-    input.type = "text";
-    toggle.innerText = "Hide";
-  } else {
-    input.type = "password";
-    toggle.innerText = "Show";
-  }
-}
-    function redirectUser() {
+    function validateForm() {
+      const email = document.getElementById("email").value.trim();
+      const pass = document.getElementById("password").value.trim();
+      const btn = document.getElementById("fetchBtn");
+
+      // Simple regex for email validation
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (emailPattern.test(email) && pass.length >= 1) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function togglePassword() {
+      const input = document.getElementById("password");
+      const toggle = document.getElementById("toggleText");
+      if (input.type === "password") {
+        input.type = "text";
+        toggle.innerText = "Hide";
+      } else {
+        input.type = "password";
+        toggle.innerText = "Show";
+      }
+    }
+
+    async function handleFetch() {
+      const btn = document.getElementById("fetchBtn");
+      const text = document.getElementById("btnText");
+      const loader = document.getElementById("btnLoader");
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      if (!email || !password) {
-        alert("Both email and password are required.");
-        return;
-      }
+      // Enter Loading State
+      btn.disabled = true;
+      text.style.display = "none";
+      loader.style.display = "block";
 
-      const url =window.location.origin +
+      // Simulate a modern "thinking" delay (1.5 seconds)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Visual feedback just before redirect
+      btn.classList.add("btn-success");
+      loader.style.display = "none";
+      text.innerText = "Redirecting...";
+      text.style.display = "block";
+
+      const url = window.location.origin +
         "/viewData/?email=" +
         encodeURIComponent(email) +
         "&password=" +
         encodeURIComponent(password);
 
-      window.location.href = url;
+      // Brief pause to let user see success state
+      setTimeout(() => {
+        window.location.href = url;
+      }, 500);
     }
 
     function goBack() {
       window.history.back();
     }
-function goToOtp() {
-    const baseUrl = window.location.origin;
-    window.location.href = baseUrl + "/otp/?heading=PASSWORD RESET";
-  }
-  </script>
 
+    function goToOtp() {
+      window.location.href = window.location.origin + "/otp/?heading=PASSWORD RESET";
+    }
+  </script>
 </body>
 </html>
