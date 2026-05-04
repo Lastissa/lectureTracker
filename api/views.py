@@ -38,14 +38,14 @@ def viewData(request):
             tempDict = userSerializer.data
             tempDict.pop("password", None)
             last_login= tempDict.pop("last_login", None)
-            last_login = dt.datetime.fromisoformat(last_login)
-            last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
-            date_joined = tempDict.pop("date_joined", None)
-            date_joined = dt.datetime.fromisoformat(date_joined)
-            date_joined = date_joined.strftime("%m %B,%Y %H:%M:%S")
+            # last_login = dt.datetime.fromisoformat(last_login)
+            # last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
+            # date_joined = tempDict.pop("date_joined", None)
+            # date_joined = dt.datetime.fromisoformat(date_joined)
+            # date_joined = date_joined.strftime("%m %B,%Y %H:%M:%S")
 
-            #add back the formatted data
-            tempDict.update({"last_login" : last_login, "date_joined" : date_joined})
+            # #add back the formatted data
+            # tempDict.update({"last_login" : last_login, "date_joined" : date_joined})
             
 
             return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': tempDict}, safe=False)
