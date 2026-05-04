@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'lecture_tracker_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if False:
+if os.getenv("local_db") is None:
     DATABASES = {
          'default': {
             'ENGINE': 'django.db.backends.postgresql',

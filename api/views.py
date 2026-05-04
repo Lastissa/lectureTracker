@@ -228,25 +228,37 @@ def frontendViewAllData(request):
 
 
 #Deactivate single account by setting is_active to false
-@api_view(['DELETE', 'GET'])
+@api_view(['DELETE', 'GET', "POST"])
 def deactivateAccount(request):
-    _userName = request.query_params.get('username', 'default')
-    _email = request.query_params.get('email', 'default')
-    _password = request.query_params.get('password', 'default')
-    
+    _userName = request.data.get('username', 'default').upper()
+    _email = request.data.get('email', 'default').upper()
+    _password = request.data.get('password', 'default')
+    #check if no request.data is passed
+    if len(request.data.keys()) < 1:
+        return Response({"message": "email required"})
+    elif _email == "DEFAULT":
+        return Response({"message": "email empty"})
+    elif _userName == "DEFAULT":
+        return Response({"message": "username required"})
+    elif _password == "default":
+        return Response({"message": "password required"})
     try:
-        object = User.objects.get(username = _userName, email = _email)
+        object = User.objects.get(username = _userName, email__iexact = _email)
     except:
-        return JsonResponse({'message': 'User not found'})
+        return Response({'message': 'User not found'})
     if object.check_password(_password):
         userserializer = UserSerializer(object, data = {'is_active': False}, partial = True)
         if userserializer.is_valid():
             userserializer.save()
-        return JsonResponse({'message': f'{_userName} deactivated'})
+            return Response({'message': f'{_email} deactivated'})
+        #error with the body request
+        else:
+            return Response({"message": "invalid serializer"})
+    #Password incorrect
     else:
-        return JsonResponse({'message': 'Incorrect password'})
+        return Response({'message': 'Incorrect password'})
     
-    return JsonResponse({'message': f'{request.query_params.get("username", "default")} deleted'})
+    #return JsonResponse({'message': f'{request.query_params.get("username", "default")} deleted'})
     
     
     
