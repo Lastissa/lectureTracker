@@ -13,6 +13,9 @@ urlpatterns = [
 
     path('deactivateAccount/', views.deactivateAccount),
     path('deactivateAccount/json/', views.deactivateAccount),
+    
+    path('reactivateAccount/', views.reactivateAccount),
+    path('reactivateAccount/json/', views.reactivateAccount),
 
     # Mass functions
     path('deleteAllData/', views.deleteAllData),

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Account Deactivated</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #0b0f1a;
+        color: #ffffff;
+    }
+
+    .container {
+        text-align: center;
+        padding: 30px;
+        background: #141a2a;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        width: 90%;
+        max-width: 420px;
+    }
+
+    h1 {
+        margin-bottom: 10px;
+        font-size: 22px;
+        color: #ff4d4d;
+    }
+
+    p {
+        margin-bottom: 25px;
+        color: #cbd5e1;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .back-btn {
+        background: #334155;
+        color: white;
+    }
+
+    .back-btn:hover {
+        background: #475569;
+    }
+
+    .recover-btn {
+        background: #2563eb;
+        color: white;
+    }
+
+    .recover-btn:hover {
+        background: #1d4ed8;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Account Deactivated</h1>
+    <p>Your account has been deactivated.</p>
+    <p>Click the <b>Recover Account</b> button to reactivate it.</p>
+    <button class="back-btn" onclick="goBack()">Back</button>
+    <button class="recover-btn" onclick="recoverAccount()">Recover Account</button>
+</div>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+
+    function recoverAccount() {
+        // Function intentionally left empty for now
+    }
+</script>
+
+</body>
+</html>

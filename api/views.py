@@ -23,6 +23,9 @@ def viewData(request):
     if userObjects is not None:
         if len(requestPassword.strip()) < 2:
             return JsonResponse({'message': 'password required'})
+        #Check if the is_active is False
+        if userObjects.is_active == False:
+            return JsonResponse({"message": "account deactivated"})
         if userObjects.check_password(requestPassword):
             historyObjects = History.objects.get(_user = userObjects)
             CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
@@ -31,7 +34,21 @@ def viewData(request):
             currentDataSerializer = CurrentDataSerializer(CurrentDataObjects, many = False)
             userSerializer = UserSerializer(userObjects, many = False)
             
-            return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': userSerializer.data}, safe=False)
+            #Edit the userObjects to remove password from the output and format the last login and date join properly
+            tempDict = userSerializer.data
+            tempDict.pop("password", None)
+            last_login= tempDict.pop("last_login", None)
+            last_login = dt.datetime.fromisoformat(last_login)
+            last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
+            date_joined = tempDict.pop("date_joined", None)
+            date_joined = dt.datetime.fromisoformat(date_joined)
+            date_joined = date_joined.strftime("%m %B,%Y %H:%M:%S")
+
+            #add back the formatted data
+            tempDict.update({"last_login" : last_login, "date_joined" : date_joined})
+            
+
+            return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': tempDict}, safe=False)
         
         else:
             return JsonResponse({'message': 'Incorrect password'})
@@ -63,6 +80,9 @@ def frontendViewData(request):
             #check password
             userObjects = User.objects.get(email__iexact = requestEmail)
             if userObjects.check_password(requestPassword):
+                #Check if the is_active is False
+                if userObjects.is_active == False:
+                    return render(request, "api/request_incomplete/viewData_account_deactivated.html")
                 #correct password
                 #return user data 
                 historyObjects = History.objects.get(_user = userObjects)
@@ -75,7 +95,17 @@ def frontendViewData(request):
                 userPersonal = userSerializer.data
                 userPersonal.pop('id', None)
                 userPersonal.pop('password', None)
-                
+                 #Edit the userObjects to remove password from the output and format the last login and date join properly                tempDict.pop("password", None)
+                last_login= userPersonal.pop("last_login", None)
+                last_login = dt.datetime.fromisoformat(last_login)
+                last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
+                date_joined = userPersonal.pop("date_joined", None)
+                date_joined = dt.datetime.fromisoformat(date_joined)
+                date_joined = date_joined.strftime("%m %B,%Y %H:%M:%S")
+
+                #add back the formatted data
+                userPersonal.update({"last_login" : last_login, "date_joined" : date_joined})
+            
                 return render(request, "api/request_incomplete/viewData_success.html", {
                     'user': userPersonal,
                     'history': historySerializer.data,
@@ -246,11 +276,14 @@ def deactivateAccount(request):
         object = User.objects.get(username = _userName, email__iexact = _email)
     except:
         return Response({'message': 'User not found'})
+    #Check if the is_active is False
+    if object.is_active == False:
+        return Response({"message": "user not found", "hint": f"This account have been deactivated prior to today on {object.last_login.strftime("%m %B,%Y %H:%M:%S")}"})
     if object.check_password(_password):
-        userserializer = UserSerializer(object, data = {'is_active': False}, partial = True)
+        userserializer = UserSerializer(object, data = {'is_active': False, 'last_login': dt.datetime.now()}, partial = True)
         if userserializer.is_valid():
             userserializer.save()
-            return Response({'message': f'{_email} deactivated'})
+            return Response({'message': f'deactivated success'})
         #error with the body request
         else:
             return Response({"message": "invalid serializer"})
@@ -258,11 +291,56 @@ def deactivateAccount(request):
     else:
         return Response({'message': 'Incorrect password'})
     
-    #return JsonResponse({'message': f'{request.query_params.get("username", "default")} deleted'})
     
     
     
     
+
+
+
+
+
+#Deactivate single account by setting is_active to True
+@api_view(['DELETE', 'GET', "POST"])
+def reactivateAccount(request):
+    _userName = request.data.get('username', 'default').upper()
+    _email = request.data.get('email', 'default').upper()
+    _password = request.data.get('password', 'default')
+    #check if no request.data is passed
+    if len(request.data.keys()) < 1:
+        return Response({"message": "email required"})
+    elif _email == "DEFAULT":
+        return Response({"message": "email empty"})
+    elif _userName == "DEFAULT":
+        return Response({"message": "username required"})
+    elif _password == "default":
+        return Response({"message": "password required"})
+    try:
+        object = User.objects.get(username = _userName, email__iexact = _email)
+    except:
+        return Response({'message': 'User not found'})
+    #Check if the is_active is True
+    if object.is_active:
+        return Response({"message": "reactivated success", "hint": "This account was not inactive prior"})
+    if object.check_password(_password):
+        userserializer = UserSerializer(object, data = {'is_active': True, 'last_login': dt.datetime.now()}, partial = True)
+        if userserializer.is_valid():
+            userserializer.save()
+            return Response({'message': 'reactivated success'})
+        #error with the body request
+        else:
+            return Response({"message": "invalid serializer"})
+    #Password incorrect
+    else:
+        return Response({'message': 'Incorrect password'})
+    
+
+
+
+
+
+
+
 
 
 #Delete all user; use with caution
@@ -598,10 +676,28 @@ def updatePassword(request):
                 #render the otp useless
                 object.delete()
                 try:
-                    send_mail(subject="Password Reset Success",
-                message=f"Hello\nYour password have been reset successully, if you did not make this request, then you are cooked you are cooked, try to change your password immediately\n\n\nDevOpe greets you",
+                    send_mail(
+                        
+                        subject="""PASSWORD RESET MESSAGE FROM LECTURE TRACKERS",
+                message=f"Subject: Password Updated Successfully – LectureTracker
+
+Hello,
+
+Your **LectureTracker** password was recently updated. If you made this change, you can safely ignore this email.
+
+### **Did you not make this request?**
+If you did **not** reset your password, it means your account may be compromised. To secure your account and prevent unauthorized access, please click the button below to reset your password immediately:
+
+[Reset Your Password](https://lecture-tracker-omega.vercel.app/otp/?heading=PASSWORD%20RESET)
+
+For your security, please do not share your login credentials or OTPs with anyone.
+
+
+Best regards,
+Dev Ope""",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[requestEmail])
+                recipient_list=[requestEmail],
+                )
                 except Exception as e:
                     print ("email password confirm not sent , why ? : f{e}")
                 return Response({"message" : "success"})
