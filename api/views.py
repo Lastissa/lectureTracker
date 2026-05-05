@@ -48,7 +48,7 @@ def viewData(request):
             tempDict.update({"last_login" : last_login, "date_joined" : date_joined})
             
 
-            return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': tempDict}, safe=False)
+            return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': tempDict, 'message': 'success'}, safe=False)
         
         else:
             return JsonResponse({'message': 'Incorrect password'})
