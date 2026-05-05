@@ -97,8 +97,11 @@ def frontendViewData(request):
                 userPersonal.pop('password', None)
                  #Edit the userObjects to remove password from the output and format the last login and date join properly                tempDict.pop("password", None)
                 last_login= userPersonal.pop("last_login", None)
-                last_login = dt.datetime.fromisoformat(last_login)
-                last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
+                if last_login == None:
+                    last_login = None
+                else:
+                    last_login = dt.datetime.fromisoformat(last_login)
+                    last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
                 date_joined = userPersonal.pop("date_joined", None)
                 date_joined = dt.datetime.fromisoformat(date_joined)
                 date_joined = date_joined.strftime("%m %B,%Y %H:%M:%S")
@@ -137,6 +140,7 @@ def backupData(request):
     requestPassword =  request.data.get('password', '')
     requestHistory = request.data.get('history', [])
     requestCurrentData = request.data.get('currentData',[] )
+    print(requestUserName)
     
     #Check if user already exists, if so, update the data, if not, create a new, currentData and history object
     userObject = User.objects.filter(email__iexact = requestEmail).first()
@@ -146,8 +150,8 @@ def backupData(request):
            #update user
            #check if the username the user want to use have not been taken
            userNameCheck= User.objects.filter(username = requestUserName).first()
-           if userNameCheck is not None:
-               return Response({"message": "username is not available"})
+           if userNameCheck is not None and userNameCheck.email.upper() != requestEmail.upper() and userObject.check_password(requestPassword):
+               return Response({"message": "username is not available"}, status=400)
            #check if username is not empty to update
            if len(requestUserName ) > 0:
                 userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now(), 'username' : requestUserName}, partial = True)
@@ -164,14 +168,14 @@ def backupData(request):
            if CurrentDataserializer.is_valid():
                CurrentDataserializer.save()
            else:
-               return Response({"message": "currentSerializer failed"})
+               return Response({"message": "currentSerializer failed"}, status=500)
            #update the history data
            historyObject = History.objects.get(_user = userObject)
            Historyserializer = HistorySerializer(historyObject, data = {'data': requestHistory}, partial = True)
            if Historyserializer.is_valid():
                Historyserializer.save()
            else:
-               return Response({"message": "historySerializer failed"})
+               return Response({"message": "historySerializer failed"}, status = 500)
            return Response({'message': 'updated success'}, status=200)
        else:
            return Response({'message': 'Incorrect password'}, status=401)
@@ -179,13 +183,13 @@ def backupData(request):
     elif userObject is None:
         #check if the username is empty or missing
         if len(requestUserName.strip() )< 1:
-            return Response({"message" : "username or email required"})
+            return Response({"message" : "username or email required"}, status=400)
         elif "@GMAIL.COM" not in requestEmail.upper():
-            return Response({"message" : "email invalid"})
+            return Response({"message" : "email invalid"}, status=400)
         #Create a new user, currentData and a new history object
         #Check if password is empty
         if len(requestPassword) < 2:
-            return Response({"message": "Password required"})
+            return Response({"message": "Password required"}, status=400)
         userObject = User.objects.create_user(username= requestUserName.upper(), password= requestPassword, email= requestEmail) 
         historyObject = History.objects.create(
             data = requestHistory,
