@@ -251,6 +251,7 @@ def frontendViewAllData(request):
     userSerializer = UserSerializer(userObjects, many = True)
     
     
+    
     return render(request, "api/request_incomplete/viewAllData_welcome.html", {'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'users': userSerializer.data})
 
 
@@ -355,6 +356,7 @@ def deleteAllData(request):
         return JsonResponse({'message': 'Unauthorized', 'hint': 'go_ahead: yes'})
     else:
         User.objects.all().delete()
+        OtpSorage.objects.all().delete()
         return JsonResponse({'message': 'All data deleted'})
 
 
@@ -461,7 +463,7 @@ def otp(request):
             <p style="color:#999; font-size:12px; text-align:center;">
             If you did not request this, please ignore this email.
             </p>
-        
+        <p style="color:#999; font-size:12px; text-align:center;"> Time sent: {dt.datetime.now()}</p>
         </div>
         
         </body>
@@ -474,7 +476,7 @@ def otp(request):
                     domain = request.build_absolute_uri('/')
                     send_mail(
             subject="Email Reset OTP",
-            message=f"Use the OTP {otp} sent to reset your password.",
+            message=f"Use the OTP {otp} sent to reset your Email.",
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[requestEmail],
             html_message=f"""
@@ -510,7 +512,7 @@ def otp(request):
 
         <!-- BUTTON -->
         <div style="text-align:center; margin:30px 0;">
-        <a href="{domain}updateEmail/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
+        <a href="{domain}updateEmail/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&old_email={requestEmail}"
             style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
             Reset Email
         </a>
@@ -519,6 +521,7 @@ def otp(request):
         <p style="color:#999; font-size:12px; text-align:center;">
         If you did not request this, please ignore this email.
         </p>
+        <p style="color:#999; font-size:12px; text-align:center;"> Time sent: {dt.datetime.now()}</p>
 
     </div>
 
@@ -577,7 +580,7 @@ def otp(request):
             <p style="color:#999; font-size:12px; text-align:center;">
             If you did not request this, please ignore this email.
             </p>
-        
+            <p style="color:#999; font-size:12px; text-align:center;"> Time sent: {dt.datetime.now()}</p>
         </div>
         
         </body>
@@ -682,22 +685,25 @@ def updatePassword(request):
                 try:
                     send_mail(
                         
-                        subject="""PASSWORD RESET MESSAGE FROM LECTURE TRACKERS",
-                message=f"Subject: Password Updated Successfully – LectureTracker
+                        subject="PASSWORD RESET MESSAGE FROM LECTURE TRACKERS",
+                        message = "password reset success",
+                html_message=f"""
 
-Hello,
+Hello,<br><br>
 
-Your **LectureTracker** password was recently updated. If you made this change, you can safely ignore this email.
+Your <strong>LectureTracker</strong> password was recently updated. If you made this change, you can safely ignore this email.<br><br>
 
-### **Did you not make this request?**
-If you did **not** reset your password, it means your account may be compromised. To secure your account and prevent unauthorized access, please click the button below to reset your password immediately:
+<strong>Did you not make this request?</strong><br>
+If you did <strong>not</strong> reset your password, it means your account may be compromised. To secure your account and prevent unauthorized access, please click the button below to reset your password immediately:<br><br>
 
-[Reset Your Password](https://lecture-tracker-omega.vercel.app/otp/?heading=PASSWORD%20RESET)
+<a href="https://lecture-tracker-omega.vercel.app/otp/?heading=PASSWORD%20RESET" 
+style="display:inline-block;padding:12px 20px;background-color:#2563eb;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">
+Reset Your Password
+</a><br><br>
 
-For your security, please do not share your login credentials or OTPs with anyone.
-
-
-Best regards,
+<p>For your security, please do not share your login credentials or OTPs with anyone<p>.<br><br>
+<p style="color:#999; font-size:12px; text-align:center;"> Time sent: {dt.datetime.now()}</p>
+Best regards,<br>
 Dev Ope""",
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[requestEmail],
@@ -742,22 +748,81 @@ def updateEmail(request):
     requestOldEMail = request.query_params.get('old_email', '').upper()
     requestNewEMail = request.query_params.get('new_email', '').upper()
     requestPassword = request.query_params.get('password', '')
+    otp = request.query_params.get("otp", '')
+    otp_sent_time = request.query_params.get("otp_sent_time", 0)#use time.time() to see the diff and check if it don reach 600 diff
+    otp_unique_id = request.query_params.get("otp_unique_id", '')
     
-    #Check if email is in system
+    #check if query params is complete
+    if "@GMAIL.COM" not in requestOldEMail:
+        return JsonResponse({"message" : "invalid old_email"})
+    elif "@GMAIL.COM" not in requestNewEMail:
+        return JsonResponse({"message" : "invalid new_email"})
+    elif len(otp) != 6:
+        return JsonResponse({"message" : "invalid otp"})
+    elif otp_sent_time == 0:
+        return JsonReeponse({"message" : "invalid otp_sent_time"})
+    elif len(otp_unique_id) < 1:
+        return JsonResponse({"message" : "invalid otp_unique_id"})
+        
+    #all params have been check and no missing data, verfiy them otp now
     try:
-        userObject = User.objects.get(email = requestOldEMail)
-        if userObject.check_password(requestPassword):
-            userserializer = UserSerializer(data = {'email': requestNewEMail}, partial = True)
-            if userserializer.is_valid():
-                userserializer.save()
-                return JsonResponse({'message': 'Email updated successfully'})
-        else:
-            return JsonResponse({'message': 'Incorrect password'})
-    except User.DoesNotExist:
-        return JsonResponse({'message': 'User not found'})
+        #to check if the otp value have not been tampered with
+        otp_sent_time = int(otp_sent_time)
+    except:
+        return JsonResponse({"message" : "hacker spotted"})
     
-    except Exception as e:
-        return JsonResponse({'message': 'An error occurred', 'error': str(e)}, status=500)
+    #Check if the credentials exist
+    object = OtpSorage.objects.filter(email__iexact = requestOldEMail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id= otp_unique_id).first()
+    if object is None:
+        return JsonResponse({"message": "invalid credentials"})
+    else:
+        #credential are valid, validate otp sent time
+        if otp_sent_time == 600:
+            return JsonResponse({"message" : "otp expired"})
+        #opt have not expired,proceed to  email
+        
+        #Check if old email is in system
+        try:
+            userObject = User.objects.get(email__iexact = requestOldEMail)
+            #check if new email is not beign used by anyone else
+            if User.objects.filter(email__iexact = requestNewEMail).first() is not None:
+                return JsonResponse({"message" : "new Email already taken"})
+        
+            #new email not in system, proceed to check password
+            if userObject.check_password(requestPassword):
+                #password valid, all check, update finally
+                userserializer = UserSerializer(userObject, data = {'email': requestNewEMail, "last_login" : dt.datetime.now()}, partial = True)
+                if userserializer.is_valid():
+                    userserializer.save()
+                    #render the otp useless
+                    object.delete()
+                    try:
+                        send_mail(
+                        
+                        subject="EMAIL RESET MESSAGE FROM LECTURE TRACKERS",
+                message=f"""Subject: email Updated Successfully – LectureTracker
+
+Hello,
+
+This is to verify that your email have been successfully updated at a request made by you and all admin capabilities have been moved from {requestOldEMail.upper()} to this new email.
+
+
+Best regards,
+Dev Ope""",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[requestNewEMail],
+                    )
+                    
+                    except Exception as e:
+                        print (f"email  confirm not sent , why ? : f{e}")
+                    return JsonResponse({"message" : "success"})
+            else:
+                return JsonResponse({'message': 'Incorrect password'})
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'User not found'})
+        
+        except Exception as e:
+            return JsonResponse({'message': 'An error occurred', 'error': str(e)}, status=500)
         
 
 
