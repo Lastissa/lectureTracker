@@ -346,6 +346,13 @@ def reactivateAccount(request):
 
 
 
+#Delete single account
+@api_view(['DELETE', 'GET'])
+def deleteAccount(request):
+    return Response({"message": "mo actice in asake"})
+
+
+
 
 
 #Delete all user; use with caution

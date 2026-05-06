@@ -14,6 +14,9 @@ urlpatterns = [
     path('deactivateAccount/', views.deactivateAccount),
     path('deactivateAccount/json/', views.deactivateAccount),
     
+    path('deleteAccount/', views.deleteAccount),
+    path('deleteAccount/json/', views.deleteAccount),
+    
     path('reactivateAccount/', views.reactivateAccount),
     path('reactivateAccount/json/', views.reactivateAccount),
 
