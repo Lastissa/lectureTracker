@@ -16,8 +16,11 @@ from django.conf import settings
 #To get one data from the db
 @api_view(['GET'])
 def viewData(request):
-    requestEmail =  request.query_params.get('email', 'default').upper()
+    requestEmail =  request.query_params.get('email', 'default').upper().strip()
     requestPassword =  request.query_params.get('password', 'a')
+    #check if the email in the param exist
+    if requestEmail == "DEFAULT":
+        return JsonResponse({"message":"user not found", "hint": "add email to the query param"})
   #Get the email if exist  
     userObjects = User.objects.filter(email__iexact = requestEmail).first()
     if userObjects is not None:
@@ -28,6 +31,7 @@ def viewData(request):
             return JsonResponse({"message": "account deactivated"})
         if userObjects.check_password(requestPassword):
             historyObjects = History.objects.get(_user = userObjects)
+            #everything id accutate, lets go
             CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
             
             historySerializer =  HistorySerializer(historyObjects ,many = False)
@@ -38,23 +42,26 @@ def viewData(request):
             tempDict = userSerializer.data
             tempDict.pop("password", None)
             last_login= tempDict.pop("last_login", None)
-            last_login = dt.datetime.fromisoformat(f"{last_login}")
-            last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
+            if last_login != None:
+                
+                last_login = dt.datetime.fromisoformat(f"{last_login}")
+                last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
             date_joined = tempDict.pop("date_joined", None)
             date_joined = dt.datetime.fromisoformat(f"{date_joined}")
             date_joined = date_joined.strftime("%m %B,%Y %H:%M:%S")
 
             #add back the formatted data
+            
             tempDict.update({"last_login" : last_login, "date_joined" : date_joined})
             
 
             return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': tempDict, 'message': 'success'}, safe=False)
         
         else:
-            return JsonResponse({'message': 'Incorrect password'})
+            return JsonResponse({'message': 'Incorrect password'}, status = 401)
 
     else:
-        return JsonResponse({"message":"user not found", "hint": "add email to the query param"})
+        return JsonResponse({"message":"user not found"})
         
     
 
