@@ -40,6 +40,8 @@ urlpatterns = [
     #others
     path('api_doc/', views.api_inspector),
     
+    path("ai/", views.ai_response), 
+    
     path('otp/json/', views.otp),
     path('otp/', views.frontendOtp),
     

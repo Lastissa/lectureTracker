@@ -220,7 +220,7 @@ def backupData(request):
 
 @api_view(["GET"])
 def frontendbackupData(request):
-    return render(request, "api/request_incomplete/nopage.html")
+    return render(request, "api/request_incomplete/nopage.html")#This is a placeholder for the frontend aspect of the backupData, which is not yet implemented, but I want to have the endpoint ready for when I want to implement it in the future.
 
 
 
@@ -893,6 +893,33 @@ def api_inspector(request):
     })
 
 
+
+
+import os
+import groq 
+# from google import genai
+# model = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# api_key = os.getenv("GEMINI_API_KEY")
+grok_api_key = os.getenv("GROK")
+@api_view(["GET"])
+def ai_response(request):
+    print(grok_api_key)
+    question = request.query_params.get("question", "");
+    if question.strip() == "":
+        return JsonResponse({"message": "empty question"}, status=400)
+    #Since question is not empty, return a proper message
+    ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
+        model="llama-3.3-70b-versatile",
+       messages=[
+        {"role": "system", "content": "You are a helpful assistant for a lecture, Answer the question as best as you can"},
+        {"role": "user", "content": question},
+        ], max_tokens=2
+       
+    )   
+
+    return JsonResponse({"message": ai_response.choices[0].message.content}, status=200)
+    
+    
 
 
 #This is for the homepage
