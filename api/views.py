@@ -1,5 +1,4 @@
 import random
-
 from django.shortcuts import render
 from rest_framework.decorators import api_view, APIView
 from rest_framework.response import Response
@@ -904,7 +903,7 @@ def api_inspector(request):
 
 
 
-@api_view(["GET"])
+@api_view(["GET"]) 
 def ai_response(request):
     question = request.query_params.get("question", "");
     if question.strip() == "":
