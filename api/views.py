@@ -10,6 +10,14 @@ from django.contrib.auth.models import User
 import datetime as dt
 from django.core.mail import send_mail
 from django.conf import settings
+import os
+import groq 
+
+
+# from google import genai
+# model = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# api_key = os.getenv("GEMINI_API_KEY")
+grok_api_key = os.getenv("GROK")
 
 
 
@@ -895,12 +903,7 @@ def api_inspector(request):
 
 
 
-import os
-import groq 
-# from google import genai
-# model = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-# api_key = os.getenv("GEMINI_API_KEY")
-grok_api_key = os.getenv("GROK")
+
 @api_view(["GET"])
 def ai_response(request):
     question = request.query_params.get("question", "");
