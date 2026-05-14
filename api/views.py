@@ -906,17 +906,14 @@ def api_inspector(request):
 @api_view(["GET"]) 
 
 def ai_response(request):
-    question = request.query_params.get("question", "");
     email = request.query_params.get("email", "");
     password = request.query_params.get("password", "")
     
     #Check if any of the query params is missing
-    if len(request.query_params.keys()) < 3:
+    if len(request.query_params.keys()) < 2:
         return JsonResponse({"message": "email, password and question are required"}, status=400)
     
-    if question.strip() == "":
-        return JsonResponse({"message": "empty question"}, status=400)
-    elif email.strip() == "":
+    if email.strip() == "":
         return JsonResponse({"message": "email required"}, status=400)
     elif password.strip() == "":
         return JsonResponse({"message": "password required"}, status=400)
