@@ -903,17 +903,18 @@ import groq
 grok_api_key = os.getenv("GROK")
 @api_view(["GET"])
 def ai_response(request):
-    print(grok_api_key)
     question = request.query_params.get("question", "");
     if question.strip() == "":
         return JsonResponse({"message": "empty question"}, status=400)
     #Since question is not empty, return a proper message
+    person = User.objects.get
+    data = History.objects.get()
     ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
         model="llama-3.3-70b-versatile",
        messages=[
-        {"role": "system", "content": "You are a helpful assistant for a lecture, Answer the question as best as you can"},
+        {"role": "system", "content": "you are to analyze the question which will be inform of a list and generate insight on area of improment and area of strenght based on the history and the current data, in the history, acomplised 0 stand for lecture missed, 1 stand for lecture attend and 2 stand for lecture nullfied, "},
         {"role": "user", "content": question},
-        ], max_tokens=2
+        ], max_tokens=5
        
     )   
 
