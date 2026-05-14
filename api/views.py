@@ -932,21 +932,23 @@ def ai_response(request):
     historyObjectSerialized = HistorySerializer(historyObject, many = False)
     currentObjectSerialized = CurrentDataSerializer(currentDataObject, many = False)
     
-    ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
+    try:
+        ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
         model="llama-3.3-70b-versatile",
        messages=[
         {"role": "system", "content": f"you are to analyze the question which will be inform of a list wrapped in strings and give summary analysis(total history count, number of missed, number of attended and number of nullifed and then find trends in it like how frequently user have imporved or decline over the time and give most lecture attended and msot lecture missed and also point out to other good to notice analysis) and give possible insight  on area of improment and area of strenght based on the history and the current data, in the history. tips to understand the data better : acomplised 0 stand for lecture missed, 1 stand for lecture attend and 2 stand for lecture nullfied,and understand that nullified lecture mean not due to user fault but due to school fault maybe lecture was cancelled or the class did not hold. do so one one single line without any break as i wont be able to clean any  newline symbol wich will make the text look weird, also  give an detailed possible measure for the student to adhere to in order to improve attendance, reply like you are speaking directly to the user and occasioanly give refrence to {person.username} as this is the user username NB: THE ONLY DATA THAT CAN BE REVELAED TO THE USER FROM THE LIST IS THE COURSE TITLE"},
         {"role": "user", "content": f"history: {historyObjectSerialized.data}, currnetData: {currentObjectSerialized.data}"},
         ]
-    # max_tokens=500,
-       
+              
     )   
-    return JsonResponse({"message": ai_response.choices[0].message.content}, status=200)
-    # return JsonResponse({"message": dataSerialized.data}, status=200, safe=False)
+        return JsonResponse({"message": ai_response.choices[0].message.content}, status=200)
     
-    
+    except groq.RateLimitError as e:
+        return JsonResponse({"message" : f"{e.body}"}, status = 429)   
+    except:
+        return JsonResponse({"message" : f"{e}"})
 
-
+{}
 #This is for the homepage
 @api_view(['GET'])
 def home(request):
