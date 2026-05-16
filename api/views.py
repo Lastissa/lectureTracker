@@ -453,9 +453,12 @@ def deleteAllData(request):
 
 
 
+
+
 import random
 import time
 @api_view(['GET', 'PATCH', 'POST'])
+
 def otp(request):
     if len(request.data.keys()) < 1:
         return JsonResponse({"message": "email required"})
@@ -675,7 +678,7 @@ def otp(request):
                 # This prints to the Vercel 'Logs' tab during startup
                 print(f"Error by ope: {f'{e}'.strip().upper()} ")
                 if f"{e}".strip().upper() == "[ERRNO 7] NO ADDRESS ASSOCIATED WITH HOSTNAME":
-                    return JsonResponse({"message" : "slow internet connection"})
+                    return JsonResponse({"message" : "slow internet connection"}, status = 404)
                 return JsonResponse({"message": "error 500"})#This will usually happens if the os.get() in the settings is not getting the gmail password
 
             

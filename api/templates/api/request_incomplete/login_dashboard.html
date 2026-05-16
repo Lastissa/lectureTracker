@@ -504,12 +504,30 @@
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 14px;
 }
+/* POP UP LIKE MY OWN NOTIFIER STYLE*/
+.popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 18px 22px;
+      border-left: 4px solid #38bdf8;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      display: none;
+      max-width: 350px;
+      font-size: 14px;
+      text-align: center;
+      z-index: 999;
+    }
 </style>
 </head>
 <body>
 <!-- MAIN LOGO Button -->
-<a href="" style="color:blue" style="padding:20px" >
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<a href="" style="color:blue;" >
+  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2">
     <circle cx="12" cy="12" r="3"></circle>
     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
   </svg>
@@ -540,9 +558,9 @@
     <div class="section">
     <h3>Account Settings</h3>
     <div class="grid">
-    <button class="btn" >Update Username</button>
-    <a href="/otp/?heading=email reset" class="btn">Update Email</a>
-    <a href="/otp/?heading=password reset" class="btn">Update Password</a>
+    <button class="btn" onclick="" >Update Username</button>
+    <button class="btn" onclick="">Update Email </button>
+    <button class="btn" onclick="settingsUpdatePassword()">Update Password </button>
     </div>
     </div>
     
@@ -648,8 +666,11 @@
   </section>
 
 </div>
-
+<div id="popup" class="popup"></div>
 <script>
+
+
+
 const settingsFab = document.getElementById('settingsFab');
 const settingsOverlay = document.getElementById('settingsOverlay');
 const settingsBack = document.getElementById('settingsBack');
@@ -748,16 +769,70 @@ async function fetchAIAnalysis(){
 }
 
 window.addEventListener('load', () => setTimeout(loadHistory, 1000));
+
+
+function showPopup(message, isError = false) {
+      const popup = document.getElementById("popup");
+      popup.innerHTML = message;
+      popup.style.display = "block";
+      popup.className = "popup" + (isError ? " error" : "");
+      if (message === "please wait..."){
+      return;
+      }
+      else{
+          setTimeout(() => {
+          popup.style.display = "none";
+          if (isError){
+          window.location.replace(window.location.href);}
+          }, 1500);
+      }
+      
+    }
+
+async function settingsUpdatePassword(){
+          const email2 = new URLSearchParams(window.location.search).get("email2");
+          
+         showPopup("please wait...", false);
+         
+        try{
+        
+        const url = "/otp/json/?heading=password reset";
+        
+        const response = await fetch(
+        url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({"email" : email2})
+        });
+        
+        const text = await response.text();
+        if (response.ok) {
+        const obj = JSON.parse(text);
+        const something = obj.message;
+        showPopup(something, true);
+        }
+        else{
+        const obj = JSON.parse(text);
+        const something = obj.message;
+        showPopup(something, false);
+       
+        }
+        
+            }catch(error){
+          showPopup("Network error. Try again.", false);
+        }
+}
+
 </script>
 </body>
 </html>
 
-dHistory, 1000));
-</script>
-</body>
+ody>
 </html>
 
 >
+
+ript>
 </body>
 </html>
 
