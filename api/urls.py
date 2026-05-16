@@ -40,11 +40,15 @@ urlpatterns = [
     #others
     path('api_doc/', views.api_inspector),
     
+    path("login/", views.login),
+    path("cleartoken/", views.cleartoken),
+    
     path("ai/", views.ai_response), 
     
     path('otp/json/', views.otp),
     path('otp/', views.frontendOtp),
     
     #Delet soon, just for experiment
-    path("temp1/", views.temp)
+    path("temp1/", views.temp),
+    path("temp2/", views.temp2)
 ]

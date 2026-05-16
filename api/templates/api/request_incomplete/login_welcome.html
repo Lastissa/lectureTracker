@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+    body{
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      padding:20px;
+    }
+    .login-container{
+      width:100%;
+      max-width:420px;
+      background:rgba(255,255,255,0.08);
+      backdrop-filter:blur(14px);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:20px;
+      padding:32px;
+      color:white;
+      box-shadow:0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .login-container h1{text-align:center;margin-bottom:24px;font-size:30px;}
+    .message{
+      width:100%;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.08);
+      padding:14px;border-radius:12px;margin-bottom:18px;font-size:14px;
+      display:flex;justify-content:center;align-items:center;text-align:center;word-break:break-word;
+    }
+    .input-group{margin-bottom:18px;}
+    .input-group label{display:block;margin-bottom:8px;font-size:14px;}
+    .input-group input{
+      width:100%;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);
+      background:rgba(255,255,255,0.08);color:white;outline:none;font-size:15px;
+    }
+    .input-group input::placeholder{color:rgba(255,255,255,0.5);}
+    .input-group input:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,0.2);}
+    .error{color:#fca5a5;font-size:13px;margin-top:6px;display:none;}
+    .reset-link{display:inline-block;margin-bottom:22px;text-decoration:none;color:#93c5fd;font-size:14px;cursor:pointer;}
+    .reset-link:hover{text-decoration:underline;}
+    .login-btn{
+      width:100%;padding:14px;border:none;border-radius:14px;background:#2563eb;
+      color:white;font-size:16px;font-weight:bold;cursor:pointer;transition:0.2s ease;
+    }
+    .login-btn:hover{transform:translateY(-1px);background:#1d4ed8;}
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Login</h1>
+{% if auth_key %}
+  <div id="authKeyData" data-key="{{ auth_key }}" style="display:none;"></div>
+{% endif %}
+    {% if message %}
+      <div class="message">{{ message }}</div>
+    {% endif %}
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Enter your email" required />
+        <div class="error" id="emailError">Please enter a valid email address.</div>
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required />
+      </div>
+
+      <a class="reset-link" id="resetPasswordLink">Reset Password</a>
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const emailError = document.getElementById("emailError");
+    const resetPasswordLink = document.getElementById("resetPasswordLink");
+
+    const baseDomain = window.location.origin;
+
+    function isValidEmail(email){
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    resetPasswordLink.addEventListener("click", function(){
+      const resetUrl = `${baseDomain}/otp/?heading=${encodeURIComponent("PASSWORD RESET")}`;
+      window.location.href = resetUrl;
+    });
+
+    form.addEventListener("submit", async function(e){
+      e.preventDefault();
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if(!isValidEmail(email)){
+        emailError.style.display = "block";
+        return;
+      }
+      emailError.style.display = "none";
+
+      try{
+        const response = await fetch(`${baseDomain}/login/`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({email,password})
+        });
+
+        const html = await response.text();
+
+        // Parse the response to check the message
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const messageEl = doc.querySelector(".message");
+        const messageText = messageEl ? messageEl.textContent.trim() : "";
+
+        // If user found, open new tab and STOP. Don't overwrite the page.
+        if(messageText === "user found"){
+          const authKeyEl = doc.querySelector("#authKeyData");
+          const authKey = authKeyEl ? authKeyEl.dataset.key : "";
+          
+          if(!authKey){
+            alert("Auth key missing in response.");
+            return;
+          }
+          
+          const url = baseDomain + "/login/?auth_key=" +  encodeURIComponent(authKey) + "&email2=" + email ;
+          window.open(url, "_self");
+          return;
+        }
+
+        // Everything else: overwrite the page like before. _self behavior.
+        document.open();
+        document.write(html);
+        document.close();
+
+      }catch(error){
+        alert("Unable to connect to the server.");
+      }
+    });
+  </script>
+</body>
+</html>

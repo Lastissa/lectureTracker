@@ -27,3 +27,10 @@ class OtpSorageSerializer(ModelSerializer):
     class Meta:
         model = OtpSorage
         fields = "__all__"
+        
+
+
+class AuthSorageSerializer(ModelSerializer):
+    class Meta:
+        model = AuthStorage
+        fields = "__all__"

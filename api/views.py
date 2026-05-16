@@ -10,13 +10,7 @@ import datetime as dt
 from django.core.mail import send_mail
 from django.conf import settings
 import os
-import groq 
 
-
-# from google import genai
-# model = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-# api_key = os.getenv("GEMINI_API_KEY")
-grok_api_key = os.getenv("GROK")
 
 
 
@@ -25,18 +19,36 @@ grok_api_key = os.getenv("GROK")
 def viewData(request):
     requestEmail =  request.query_params.get('email', 'default').upper().strip()
     requestPassword =  request.query_params.get('password', 'a')
+    request_auth_key = request.query_params.get("auth_key", None)
+    
+    specialAccessForAuthKey = False; #for auth key so as to skip password checking
     #check if the email in the param exist
     if requestEmail == "DEFAULT":
         return JsonResponse({"message":"user not found", "hint": "add email to the query param"})
   #Get the email if exist  
     userObjects = User.objects.filter(email__iexact = requestEmail).first()
     if userObjects is not None:
-        if len(requestPassword.strip()) < 2:
-            return JsonResponse({'message': 'password required'})
+        #check if the request_auth_key exist
+        if request_auth_key != None:
+            authObject = AuthStorage.objects.filter(_user__email__iexact = requestEmail, auth_key = request_auth_key).first()
+            #check if the auth key exist in the db
+            if authObject != None:
+                #check if token is nt expired yet
+                if (time.time() - authObject.expiration_time) < 1200:
+                    #give access to data by chaging value of specialAccessForAuthKey
+                    specialAccessForAuthKey = True
+                    
+                else:
+                    return JsonResponse({"message" : "Token expired"})
+        if len(requestPassword.strip()) < 2 :
+            if specialAccessForAuthKey:
+                pass
+            else:
+                return JsonResponse({'message': 'password required'})
         #Check if the is_active is False
         if userObjects.is_active == False:
             return JsonResponse({"message": "account deactivated"})
-        if userObjects.check_password(requestPassword):
+        if userObjects.check_password(requestPassword) or specialAccessForAuthKey :
             historyObjects = History.objects.get(_user = userObjects)
             #everything id accutate, lets go
             CurrentDataObjects = CurrentData.objects.get(_user = userObjects)
@@ -50,19 +62,28 @@ def viewData(request):
             tempDict.pop("password", None)
             last_login= tempDict.pop("last_login", None)
             if last_login != None:
-                
                 last_login = dt.datetime.fromisoformat(f"{last_login}")
-                last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
+                last_login = last_login.strftime("%d %B,%Y %H:%M:%S")
             date_joined = tempDict.pop("date_joined", None)
             date_joined = dt.datetime.fromisoformat(f"{date_joined}")
-            date_joined = date_joined.strftime("%m %B,%Y %H:%M:%S")
+            date_joined = date_joined.strftime("%d %B,%Y %H:%M:%S")
 
             #add back the formatted data
             
             tempDict.update({"last_login" : last_login, "date_joined" : date_joined})
             
-
-            return JsonResponse({'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'user': tempDict, 'message': 'success'}, safe=False)
+            #return only the data key in historySerializer.data
+            try:
+                historyToReturn = historySerializer.data["data"]
+            except:
+                historyToReturn = historySerializer.data
+                
+             #return only the data key in currentDataSerializer.data
+            try:
+                 currentDataToReturn = currentDataSerializer.data["data"]
+            except:
+                 currentDataToReturn = currentDataSerializer.data
+            return JsonResponse({'history': historyToReturn, 'currentData': currentDataToReturn, 'user': tempDict, 'message': 'success'}, safe=False)
         
         else:
             return JsonResponse({'message': 'Incorrect password'}, status = 401)
@@ -115,10 +136,10 @@ def frontendViewData(request):
                     last_login = None
                 else:
                     last_login = dt.datetime.fromisoformat(last_login)
-                    last_login = last_login.strftime("%m %B,%Y %H:%M:%S")
+                    last_login = last_login.strftime("%d %B,%Y %H:%M:%S")
                 date_joined = userPersonal.pop("date_joined", None)
                 date_joined = dt.datetime.fromisoformat(date_joined)
-                date_joined = date_joined.strftime("%m %B,%Y %H:%M:%S")
+                date_joined = date_joined.strftime("%d %B,%Y %H:%M:%S")
 
                 #add back the formatted data
                 userPersonal.update({"last_login" : last_login, "date_joined" : date_joined})
@@ -640,15 +661,28 @@ def temp(request):
         return Response({"message" : "delete all success"})
     serializer = OtpSorageSerializer(object, many = True)
     return Response(serializer.data)
-    
-    
-   
-   
-   
-   
-   
-   
-   
+
+
+@api_view(["GET"])
+def temp2(request):
+    del_all = request.query_params.get("del")#clear the table
+    object = AuthStorage.objects.all()
+    if del_all is not None:
+        object.delete()
+        return Response({"message" : "delete all success"})
+    serializer = AuthSorageSerializer(object, many = True)
+    return Response(serializer.data)
+
+
+
+
+
+
+
+
+
+
+
 #otp frontend 
 @api_view(["GET"])
 def frontendOtp(request):
@@ -891,7 +925,7 @@ def api_inspector(request):
 
         endpoint_data.append({
             "url": url,
-            "full_url": f"/{url}",   # 🔥 for redirection
+            "full_url": f"/{url}",   # for redirection
             "doc": API_DOC.get(key)
         })
 
@@ -904,51 +938,165 @@ def api_inspector(request):
 
 
 @api_view(["GET"]) 
-
 def ai_response(request):
     email = request.query_params.get("email", "");
     password = request.query_params.get("password", "")
-    
-    #Check if any of the query params is missing
-    if len(request.query_params.keys()) < 2:
-        return JsonResponse({"message": "email, password and question are required"}, status=400)
+    request_auth_key = request.query_params.get("auth_key", )
+    specialSkipPassword = False
+    #check the request_auth_key
+    if request_auth_key is not None:
+        authObject = AuthStorage.objects.filter(_user__email__iexact = email, auth_key = request_auth_key).first()
+            #check if the auth key exist in the db
+        if authObject != None:
+            #check if token is nt expired yet
+            if (time.time() - authObject.expiration_time) < 1200:
+                #give access to data by chaging value of specialAccessForAuthKey
+                specialSkipPassword = True
+                    
+            else:
+                return JsonResponse({"message" : "Token expired"})
+    #Check if any of the query params is missing (skip passwprd if auth_key dectected)
+    if (len(request.query_params.keys()) < 2 and specialSkipPassword == False) or len(email) < 2:
+        return JsonResponse({"message": "email and password are required"}, status=400)
     
     if email.strip() == "":
         return JsonResponse({"message": "email required"}, status=400)
-    elif password.strip() == "":
+    elif password.strip() == "" and specialSkipPassword==False:
         return JsonResponse({"message": "password required"}, status=400)
 
     #Since no missing param, check user data
     person = User.objects.filter(email__iexact = email.strip()).first()
     if person is None:
         return JsonResponse({"message": "user not found"}, status=404)
-    elif not person.check_password(password):
+    elif not person.check_password(password) and specialSkipPassword == False:
         return JsonResponse({"message": "Incorrect password"}, status=401)
     #Password is correcrt and user exist
     historyObject = History.objects.get(_user = person)
     currentDataObject = CurrentData.objects.get(_user = person)
     
+    
+    
+    if os.getenv("local_db") is not None:
+        return Response("works")
+    else:
+        import groq 
+        grok_api_key = os.getenv("GROK")
     #Serialize the data
-    historyObjectSerialized = HistorySerializer(historyObject, many = False)
-    currentObjectSerialized = CurrentDataSerializer(currentDataObject, many = False)
+        historyObjectSerialized = HistorySerializer(historyObject, many = False)
+        currentObjectSerialized = CurrentDataSerializer(currentDataObject, many = False)
+        
+        try:
+            ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
+            model="llama-3.3-70b-versatile",
+           messages=[
+            {"role": "system", "content": f"you are to analyze the question which will be inform of a list wrapped in strings and give summary analysis(total history count, number of missed, number of attended and number of nullifed and then find trends in it like how frequently user have imporved or decline over the time and give most lecture attended and msot lecture missed and also point out to other good to notice analysis) and give possible insight  on area of improment and area of strenght based on the history and the current data, in the history. tips to understand the data better : acomplised 0 stand for lecture missed, 1 stand for lecture attend and 2 stand for lecture nullfied,and understand that nullified lecture mean not due to user fault but due to school fault maybe lecture was cancelled or the class did not hold. do so one one single line without any break as i wont be able to clean any  newline symbol wich will make the text look weird, also  give an detailed possible measure for the student to adhere to in order to improve attendance and dont forget to remind user that they should backup their data as its from their latest backup insight will be generated by you, reply like you are speaking directly to the user and occasioanly give refrence to {person.username} as this is the user username NB: THE ONLY DATA THAT CAN BE REVELAED TO THE USER FROM THE LIST IS THE COURSE TITLE"},
+            {"role": "user", "content": f"history: {historyObjectSerialized.data}, currnetData: {currentObjectSerialized.data}"},
+            ]
+                  
+        )   
+            return JsonResponse({"message": ai_response.choices[0].message.content}, status=200)
+        
+        except groq.RateLimitError as e:
+            return JsonResponse({"message" : f"{e.body}"}, status = 429)   
+        except:
+            return JsonResponse({"message" : f"{e}"})
     
-    try:
-        ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
-        model="llama-3.3-70b-versatile",
-       messages=[
-        {"role": "system", "content": f"you are to analyze the question which will be inform of a list wrapped in strings and give summary analysis(total history count, number of missed, number of attended and number of nullifed and then find trends in it like how frequently user have imporved or decline over the time and give most lecture attended and msot lecture missed and also point out to other good to notice analysis) and give possible insight  on area of improment and area of strenght based on the history and the current data, in the history. tips to understand the data better : acomplised 0 stand for lecture missed, 1 stand for lecture attend and 2 stand for lecture nullfied,and understand that nullified lecture mean not due to user fault but due to school fault maybe lecture was cancelled or the class did not hold. do so one one single line without any break as i wont be able to clean any  newline symbol wich will make the text look weird, also  give an detailed possible measure for the student to adhere to in order to improve attendance, reply like you are speaking directly to the user and occasioanly give refrence to {person.username} as this is the user username NB: THE ONLY DATA THAT CAN BE REVELAED TO THE USER FROM THE LIST IS THE COURSE TITLE"},
-        {"role": "user", "content": f"history: {historyObjectSerialized.data}, currnetData: {currentObjectSerialized.data}"},
-        ]
-              
-    )   
-        return JsonResponse({"message": ai_response.choices[0].message.content}, status=200)
-    
-    except groq.RateLimitError as e:
-        return JsonResponse({"message" : f"{e.body}"}, status = 429)   
-    except:
-        return JsonResponse({"message" : f"{e}"})
 
-{}
+
+
+
+
+
+@api_view(['GET', "POST", "PATCH"])
+def login(request):
+    email = request.data.get("email", None)
+    password = request.data.get("password", "")
+    request_auth_key = request.query_params.get("auth_key", None)
+    request_query_email2 = request.query_params.get("email2", None)
+    
+    #check if there is an auth_key in the param, will use this a verification istead of password
+    if  request_auth_key != None and request_query_email2 != None:
+        #verify the auth_key
+        is_auth_key_authentic = AuthStorage.objects.filter(auth_key = request_auth_key, _user__email__iexact = request_query_email2).first()
+        
+        if is_auth_key_authentic is None:
+            #pass so the user can be prompt to login again
+            pass
+        else:
+            #verify the auth_key have not expired
+            if (time.time() - is_auth_key_authentic.expiration_time) < 1200 :
+                #have not expired, procees to login page
+                
+                userObject = User.objects.get(username = is_auth_key_authentic._user)
+                if userObject.last_login != None:
+                    last_login = dt.datetime.fromisoformat(f"{userObject.last_login}")
+                    last_login = last_login.strftime("%d %B,%Y %H:%M")
+                else:
+                    last_login = None
+                date_joined = dt.datetime.fromisoformat(f"{userObject.date_joined}")
+                date_joined = date_joined.strftime("%d %B,%Y %H:%M")
+                return render(request, "api/request_incomplete/login_dashboard.html", {
+                "username" : f"{is_auth_key_authentic._user}",
+                "email" : request_query_email2,
+                "date_joined": f"{date_joined}",
+                "last_login" : f"{last_login}"}
+                )
+            else:
+                #auth_key expired
+                return render(request, "api/request_incomplete/login_welcome.html", {"message" : f"token expired {int(time.time() - is_auth_key_authentic.expiration_time  - 1200)} sec ago"})
+    
+    
+    if email == None:
+        return render(request,"api/request_incomplete/login_welcome.html")
+    else:
+        #Validate email in the db
+        person = User.objects.filter(email__iexact = email).first()
+        if person:
+            
+            #verify password when auth_key is missing
+            if person.check_password(password):
+                #password verified, generate an auth_key for them
+                import string
+                all = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
+                auth_key_value = ""
+                for i in range(random.randint(101,151)):
+                    auth_key_value += random.choice(all)
+                  #delete any older auth_key so the user can only sign in one place
+                AuthStorage.objects.filter(_user = person).delete()
+                #now create a new one
+                AuthStorage.objects.create(_user = person,  auth_key = auth_key_value, expiration_time = time.time())
+                #end of generating auth_key and added to db
+                
+                #update thr last login to now
+                userserializer = UserSerializer(person, data = {"last_login" : dt.datetime.now()}, partial = True)
+                if userserializer.is_valid():
+                    userserializer.save()
+                    print("saved yoo")
+                else:
+                    print("error saving ")
+                return render(request,"api/request_incomplete/login_welcome.html", {"message" : "user found",  "auth_key" : auth_key_value})
+                pass
+            #wrong password
+            return render(request,"api/request_incomplete/login_welcome.html", {"message" : "Incorrect Password"})
+        else:
+            #no user found 
+            return render(request,"api/request_incomplete/login_welcome.html", {"message" : "No User Found"})
+
+
+
+@api_view(["GET", "POST"])
+def cleartoken(request):
+    email = request.query_params.get("email", None)
+    if email is None:
+        return JsonResponse({"message" : "email required"})
+    else:
+        try:
+            AuthStorage.objects.get(_user__email__iexact = email).delete()
+        except Exception as e:
+            print(f"{e}")
+        return render(request, "api/request_incomplete/login_welcome.html")
+
+
 #This is for the homepage
 @api_view(['GET'])
 def home(request):

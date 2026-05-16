@@ -1,12 +1,13 @@
 import requests
 import threading
 import random
+import time
 
-LOGIN_URL = "http://127.0.0.1:8000/viewData/json/"
+LOGIN_URL = "https://lecture-tracker-omega.vercel.app/viewData/json/"
 
 p = "allahu"
 
-TOTAL_USERS = 720
+TOTAL_USERS = 7
 
 def login_user():
     response = requests.get(
@@ -24,6 +25,7 @@ def login_user():
     else:
         print(response.status_code)
     
+    #time.sleep(1)
     
 
 threads = []

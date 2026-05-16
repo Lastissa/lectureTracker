@@ -30,3 +30,12 @@ class OtpSorage(models.Model):
     
     def __str__(self):
         return "OtpStorage"
+        
+        
+        
+        
+class AuthStorage(models.Model):
+    #i used foreign key bcos i dont want unique to be true
+    _user = models.ForeignKey(User, on_delete=models.CASCADE)
+    auth_key = models.CharField(null = False, blank = False, max_length = 200) #random string mix of Aa0symbols
+    expiration_time = models.IntegerField()#time.time()
