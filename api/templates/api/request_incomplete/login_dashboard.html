@@ -161,7 +161,7 @@
   .info{
     grid-area: info;
     display: grid;
-    grid-template-columns: repeat(3,1fr);
+    grid-template-columns: repeat(auto_fit,1fr);
     gap: 14px;
     min-width: 0;
   }
@@ -321,16 +321,274 @@
   max-width: 700px;
   white-space: pre-wrap;
 }
+.countdown-card {
+  border: 1px solid var(--accent);
+}
+#tokenCountdown {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+#tokenCountdown.expired {
+  color: var(--red);
+}
+/* Floating Settings button */
+.settings-fab{
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 100;
+  transition: transform 0.2s ease, background 0.2s ease;
+  color: var(--text);
+}
+.settings-fab:hover{
+  transform: scale(1.08);
+  background: rgba(255,255,255,0.1);
+}
+.settings-fab svg{
+  width: 24px;
+  height: 24px;
+}
+
+/* Settings Overlay */
+.settings-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(11,13,20,0.95);
+  backdrop-filter: blur(12px);
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+.settings-overlay.active{display: flex;}
+
+.settings-header{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+.settings-back{
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.settings-title{font-size: 1.1rem; font-weight: 600;}
+
+.settings-content{
+  flex: 1;
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.placeholder{
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+/* SECTION CARD */
+.section {
+    background: rgba(17, 24, 39, 0.75);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    backdrop-filter: blur(10px);
+}
+
+/* SECTION TITLE */
+.section h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: #94a3b8;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+/* BUTTON BASE */
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #e2e8f0;
+    background: rgba(31, 41, 55, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    transition: 0.25s ease;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* HOVER LIFT + GLOW */
+.btn:hover {
+    transform: translateY(-3px);
+    border-color: #38bdf8;
+    box-shadow: 0 10px 25px rgba(56,189,248,0.15);
+}
+
+/* subtle glow sweep */
+.btn::before {
+    content: "";
+    position: absolute;
+    width: 100px;
+    height: 100%;
+    top: 0;
+    left: -120px;
+    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.2), transparent);
+    transition: 0.6s;
+}
+
+.btn:hover::before {
+    left: 120%;
+}
+
+/* VARIANTS */
+.btn-danger {
+    background: rgba(127, 29, 29, 0.25);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.btn-danger:hover {
+    border-color: #ef4444;
+    box-shadow: 0 10px 25px rgba(239,68,68,0.2);
+}
+
+.btn-warning {
+    background: rgba(161, 98, 7, 0.25);
+    border-color: rgba(250, 204, 21, 0.35);
+}
+
+.btn-warning:hover {
+    border-color: #facc15;
+    box-shadow: 0 10px 25px rgba(250,204,21,0.2);
+}
+
+.btn-primary {
+    background: rgba(29, 78, 216, 0.2);
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+.btn-primary:hover {
+    border-color: #38bdf8;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
 </style>
 </head>
 <body>
+<!-- MAIN LOGO Button -->
+<a href="" style="color:blue" style="padding:20px" >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+</a>
 <!-- Floating AI Button -->
 <div class="ai-fab" id="aiFab">
   <svg viewBox="0 0 24 24">
     <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73A2.002 2.002 0 0 1 12 2m0 10a5 5 0 0 0-5 5v1h10v-1a5 5 0 0 0-5-5Z"/>
   </svg>
 </div>
+<!-- Floating Settings Button -->
+<div class="settings-fab" id="settingsFab" aria-label="Settings">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+</div>
 
+<!-- Settings Overlay -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-header">
+    <button class="settings-back" id="settingsBack">← Back</button>
+    <div class="settings-title">SETTINGS</div>
+  </div>
+  <div class="settings-content" id="settingsContent">
+    
+    <!-- ACCOUNT SETTINGS -->
+    <div class="section">
+    <h3>Account Settings</h3>
+    <div class="grid">
+    <button class="btn" >Update Username</button>
+    <a href="/otp/?heading=email reset" class="btn">Update Email</a>
+    <a href="/otp/?heading=password reset" class="btn">Update Password</a>
+    </div>
+    </div>
+    
+    <!-- DANGER -->
+    <div class="section">
+    <h3 style="color:#f87171;">Danger Zone</h3>
+    <div class="grid">
+    <a href="/deactivateAccount/" class="btn btn-danger">Deactivate Account</a>
+    
+    <!-- NEW -->
+    <a href="/reactivateAccount/" class="btn btn-warning">Reactivate Account</a>
+    
+    <!-- NEW -->
+    <a href="/deleteAccount/" class="btn btn-danger">Delete Account</a>
+    
+    
+    </div>
+    </div>
+    
+    <!-- OTHER -->
+    <div class="section">
+    <h3>About Developer</h3>
+    <!--PORTFOLIO PROFILE-->
+    <div class="grid"  style="padding: 14px 16px;">
+    <a href="/backupData/" class="btn btn-primary">PORTFOLIO</a>
+    </div>
+    <!--LINKDN PROFILE-->
+    <div class="grid"  style="padding: 14px 16px;">
+    <a href="/backupData/" class="btn btn-primary">LINKDN PROFILE</a>
+    </div>
+    <!--X PROFILE-->
+    <div class= "grid" style="padding: 14px 16px;" >
+    <a href="https://x.com/lastissa" class="btn bth-primary" >X PROFILE</a>
+    </div>
+    <!--GITHUB PROFILE-->
+    <div class="grid"  style="padding: 14px 16px;">
+    <a href="https://github.com/Lastissa" class="btn btn-primary">GITHUB PROFILE</a>
+    </div>
+    </div>
+    <div class="placeholder">
+    
+      <!--This is where you’ll add your settings options.  
+      The page is scrollable, so you can add as many elements as you want. -->
+    </div>
+  </div>
+</div>
 <!-- AI Overlay -->
 <div class="ai-overlay" id="aiOverlay">
   <div class="ai-header">
@@ -349,27 +607,12 @@
     </div>
     <a href="/cleartoken/?email={{ email }}" class="logout">Logout</a>
   </header>
-
-  <section class="stats">
-    <h2>Activity</h2>
-    <div class="stat-box">
-      <div class="stat-track">
-        <div class="stat-card missed">
-          <div class="num">20</div>
-          <div class="label">Missed</div>
-        </div>
-        <div class="stat-card attend">
-          <div class="num">25</div>
-          <div class="label">Attend</div>
-        </div>
-        <div class="stat-card null">
-          <div class="num">5</div>
-          <div class="label">Nullified</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
+{% if token_time_left is not None %}
+<div class="info-card countdown-card">
+  <div class="info-label">Token expires in</div>
+  <div class="info-value" id="tokenCountdown">{{ token_time_left }} seconds</div>
+</div>
+{% endif %}
   <section class="info">
     <div class="info-card">
       <div class="info-label">Email</div>
@@ -382,6 +625,18 @@
     <div class="info-card">
       <div class="info-label">Last Login</div>
       <div class="info-value">{{ last_login }}</div>
+      
+
+    </div>
+    <div class="info-card">
+    <div class="info-label">Is Active</div>
+    {% if is_active == True%}
+    <div class="info-value" style="color:green"  >Account is active</div>
+    {% else %}
+    <div class="info-value" style="color:red" >Account is deactivated, enter settings to reactivate</div>
+    {% endif %}
+    </div>
+    
     </div>
   </section>
 
@@ -395,6 +650,33 @@
 </div>
 
 <script>
+const settingsFab = document.getElementById('settingsFab');
+const settingsOverlay = document.getElementById('settingsOverlay');
+const settingsBack = document.getElementById('settingsBack');
+
+settingsFab.addEventListener('click', () => {
+  settingsOverlay.classList.add('active');
+});
+
+settingsBack.addEventListener('click', () => {
+  settingsOverlay.classList.remove('active');
+});
+const countdownEl = document.getElementById('tokenCountdown');
+if (countdownEl) {
+  let seconds = parseInt(countdownEl.textContent.trim(), 10);
+  
+  function tick() {
+    if (seconds <= 0) {
+      countdownEl.textContent = '0';
+      countdownEl.classList.add('expired');
+      return;
+    }
+    seconds--;
+    countdownEl.textContent = seconds + " seconds";
+  }
+
+  setInterval(tick, 1000);
+}
 async function loadHistory(){
   const urlParams = new URLSearchParams(window.location.search);
   if(urlParams.has('email2')){
@@ -469,3 +751,13 @@ window.addEventListener('load', () => setTimeout(loadHistory, 1000));
 </script>
 </body>
 </html>
+
+dHistory, 1000));
+</script>
+</body>
+</html>
+
+>
+</body>
+</html>
+

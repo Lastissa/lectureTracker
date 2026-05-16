@@ -302,15 +302,33 @@ def frontendViewAllData(request):
 def deactivateAccount(request):
     _userName = request.data.get('username', 'default').upper()
     _email = request.data.get('email', 'default').upper()
-    _password = request.data.get('password', 'default')
+    _password = request.data.get('password', "defaultImpossible")
+    request_auth_key = request.data.get("auth_key", None)
+    
+    specialAccessForAuthKey = False; #for auth key so as to skip password checking
+    
+    
     #check if no request.data is passed
     if len(request.data.keys()) < 1:
-        return Response({"message": "email required"})
-    elif _email == "DEFAULT":
+        return Response({"message": "email required, password required, username required"})
+    if _email == "DEFAULT":
         return Response({"message": "email empty"})
-    elif _userName == "DEFAULT":
+    if _userName == "DEFAULT":
         return Response({"message": "username required"})
-    elif _password == "default":
+    #check if the request_auth_key exist
+    if request_auth_key != None:
+        authObject = AuthStorage.objects.filter(_user__email__iexact = _email, auth_key = request_auth_key).first()
+        #check if the auth key exist in the db
+        if authObject != None:
+            #check if token is nt expired yet
+            if (time.time() - authObject.expiration_time) < 1200:
+                #give access to data by chaging value of specialAccessForAuthKey
+                specialAccessForAuthKey = True
+                    
+            else:
+                return JsonResponse({"message" : "Token expired"})
+    
+    if _password == "defaultImpossible" and specialAccessForAuthKey == False:
         return Response({"message": "password required"})
     try:
         object = User.objects.get(username = _userName, email__iexact = _email)
@@ -319,7 +337,7 @@ def deactivateAccount(request):
     #Check if the is_active is False
     if object.is_active == False:
         return Response({"message": "user not found", "hint": f"This account have been deactivated prior to today on {object.last_login.strftime("%m %B,%Y %H:%M:%S")}"})
-    if object.check_password(_password):
+    if object.check_password(_password) or specialAccessForAuthKey == True:
         userserializer = UserSerializer(object, data = {'is_active': False, 'last_login': dt.datetime.now()}, partial = True)
         if userserializer.is_valid():
             userserializer.save()
@@ -346,14 +364,30 @@ def reactivateAccount(request):
     _userName = request.data.get('username', 'default').upper()
     _email = request.data.get('email', 'default').upper()
     _password = request.data.get('password', 'default')
+    request_auth_key = request.data.get("auth_key", None)
+    
+    specialAccessForAuthKey = False; #for auth key so as to skip password checking
+    
     #check if no request.data is passed
     if len(request.data.keys()) < 1:
-        return Response({"message": "email required"})
-    elif _email == "DEFAULT":
+        return Response({"message": "email required, password required, username required"})
+    if _email == "DEFAULT":
         return Response({"message": "email empty"})
-    elif _userName == "DEFAULT":
+    if _userName == "DEFAULT":
         return Response({"message": "username required"})
-    elif _password == "default":
+    if request_auth_key != None:
+        authObject = AuthStorage.objects.filter(_user__email__iexact = _email, auth_key = request_auth_key).first()
+        #check if the auth key exist in the db
+        if authObject != None:
+            #check if token is nt expired yet
+            if (time.time() - authObject.expiration_time) < 1200:
+                #give access to data by chaging value of specialAccessForAuthKey
+                specialAccessForAuthKey = True
+                    
+            else:
+                return JsonResponse({"message" : "Token expired"})
+    
+    if _password == "default" and specialAccessForAuthKey == False:
         return Response({"message": "password required"})
     try:
         object = User.objects.get(username = _userName, email__iexact = _email)
@@ -362,7 +396,7 @@ def reactivateAccount(request):
     #Check if the is_active is True
     if object.is_active:
         return Response({"message": "reactivated success", "hint": "This account was not inactive prior"})
-    if object.check_password(_password):
+    if object.check_password(_password) or specialAccessForAuthKey == True:
         userserializer = UserSerializer(object, data = {'is_active': True, 'last_login': dt.datetime.now()}, partial = True)
         if userserializer.is_valid():
             userserializer.save()
@@ -639,7 +673,9 @@ def otp(request):
                 return JsonResponse({"message": "success"})
             except Exception as e:
                 # This prints to the Vercel 'Logs' tab during startup
-                print(f"Error by ope: {e}")
+                print(f"Error by ope: {f'{e}'.strip().upper()} ")
+                if f"{e}".strip().upper() == "[ERRNO 7] NO ADDRESS ASSOCIATED WITH HOSTNAME":
+                    return JsonResponse({"message" : "slow internet connection"})
                 return JsonResponse({"message": "error 500"})#This will usually happens if the os.get() in the settings is not getting the gmail password
 
             
@@ -941,8 +977,9 @@ def api_inspector(request):
 def ai_response(request):
     email = request.query_params.get("email", "");
     password = request.query_params.get("password", "")
-    request_auth_key = request.query_params.get("auth_key", )
-    specialSkipPassword = False
+    request_auth_key = request.query_params.get("auth_key", None)
+    
+    specialAccessForAuthKey = False; #for auth key so as to skip password checking
     #check the request_auth_key
     if request_auth_key is not None:
         authObject = AuthStorage.objects.filter(_user__email__iexact = email, auth_key = request_auth_key).first()
@@ -951,26 +988,30 @@ def ai_response(request):
             #check if token is nt expired yet
             if (time.time() - authObject.expiration_time) < 1200:
                 #give access to data by chaging value of specialAccessForAuthKey
-                specialSkipPassword = True
+                specialAccessForAuthKey = True
                     
             else:
                 return JsonResponse({"message" : "Token expired"})
     #Check if any of the query params is missing (skip passwprd if auth_key dectected)
-    if (len(request.query_params.keys()) < 2 and specialSkipPassword == False) or len(email) < 2:
+    if (len(request.query_params.keys()) < 2 and specialAccessForAuthKey == False) or len(email) < 2:
         return JsonResponse({"message": "email and password are required"}, status=400)
     
     if email.strip() == "":
         return JsonResponse({"message": "email required"}, status=400)
-    elif password.strip() == "" and specialSkipPassword==False:
+    elif password.strip() == "" and specialAccessForAuthKey==False:
         return JsonResponse({"message": "password required"}, status=400)
 
     #Since no missing param, check user data
     person = User.objects.filter(email__iexact = email.strip()).first()
     if person is None:
         return JsonResponse({"message": "user not found"}, status=404)
-    elif not person.check_password(password) and specialSkipPassword == False:
+    elif not person.check_password(password) and specialAccessForAuthKey == False:
         return JsonResponse({"message": "Incorrect password"}, status=401)
     #Password is correcrt and user exist
+    #check if is_active == false
+    if person.is_active == False:
+        return JsonResponse({"message" : "account is disabled,cannot generate response until you enable it"})
+    #is_active == true from here, continue
     historyObject = History.objects.get(_user = person)
     currentDataObject = CurrentData.objects.get(_user = person)
     
@@ -1007,6 +1048,9 @@ def ai_response(request):
 
 
 
+
+
+
 @api_view(['GET', "POST", "PATCH"])
 def login(request):
     email = request.data.get("email", None)
@@ -1035,11 +1079,16 @@ def login(request):
                     last_login = None
                 date_joined = dt.datetime.fromisoformat(f"{userObject.date_joined}")
                 date_joined = date_joined.strftime("%d %B,%Y %H:%M")
+                #login dashbpard
                 return render(request, "api/request_incomplete/login_dashboard.html", {
                 "username" : f"{is_auth_key_authentic._user}",
                 "email" : request_query_email2,
                 "date_joined": f"{date_joined}",
-                "last_login" : f"{last_login}"}
+                "last_login" : f"{last_login}",
+                "is_active" : f"{userObject.is_active}",
+                "token_time_left" : abs(int(time.time() - is_auth_key_authentic.expiration_time-1200)),
+                "token_value" : f"{is_auth_key_authentic.auth_key}"
+                }
                 )
             else:
                 #auth_key expired
@@ -1053,7 +1102,7 @@ def login(request):
         person = User.objects.filter(email__iexact = email).first()
         if person:
             
-            #verify password when auth_key is missing
+            #verify password when auth_key is missing -this signify user is about to leave welcome to dashboard
             if person.check_password(password):
                 #password verified, generate an auth_key for them
                 import string
@@ -1084,17 +1133,29 @@ def login(request):
 
 
 
+
+
+
+
+
+
 @api_view(["GET", "POST"])
 def cleartoken(request):
     email = request.query_params.get("email", None)
     if email is None:
-        return JsonResponse({"message" : "email required"})
+        return render(request, "api/request_incomplete/login_welcome.html", {"message": "token invalidated"})
     else:
         try:
             AuthStorage.objects.get(_user__email__iexact = email).delete()
         except Exception as e:
             print(f"{e}")
         return render(request, "api/request_incomplete/login_welcome.html")
+
+
+
+
+
+
 
 
 #This is for the homepage
