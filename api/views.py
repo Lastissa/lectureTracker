@@ -812,6 +812,9 @@ Dev Ope""",
 
 
 
+
+
+
 @api_view(['PATCH', 'POST', 'GET'])
 def  frontendUpdatePassword(request):
     
@@ -837,11 +840,11 @@ def  frontendUpdatePassword(request):
 
 
 
-@api_view(['PATCH', 'GET'])
+
+@api_view(['PATCH', 'GET', "POST"])
 def updateEmail(request):
     requestOldEMail = request.query_params.get('old_email', '').upper()
     requestNewEMail = request.query_params.get('new_email', '').upper()
-    requestPassword = request.query_params.get('password', '')
     otp = request.query_params.get("otp", '')
     otp_sent_time = request.query_params.get("otp_sent_time", 0)#use time.time() to see the diff and check if it don reach 600 diff
     otp_unique_id = request.query_params.get("otp_unique_id", '')
@@ -864,14 +867,16 @@ def updateEmail(request):
         otp_sent_time = int(otp_sent_time)
     except:
         return JsonResponse({"message" : "hacker spotted"})
-    
+    #check if old email and new email are not the same
+    if requestOldEMail.upper().strip() == requestNewEMail.upper().strip():
+        return JsonResponse({"message": "new email cannot be same as old email"})
     #Check if the credentials exist
     object = OtpSorage.objects.filter(email__iexact = requestOldEMail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id= otp_unique_id).first()
     if object is None:
         return JsonResponse({"message": "invalid credentials"})
     else:
         #credential are valid, validate otp sent time
-        if otp_sent_time == 600:
+        if otp_sent_time >  600:
             return JsonResponse({"message" : "otp expired"})
         #opt have not expired,proceed to  email
         
@@ -881,19 +886,17 @@ def updateEmail(request):
             #check if new email is not beign used by anyone else
             if User.objects.filter(email__iexact = requestNewEMail).first() is not None:
                 return JsonResponse({"message" : "new Email already taken"})
-        
-            #new email not in system, proceed to check password
-            if userObject.check_password(requestPassword):
-                #password valid, all check, update finally
-                userserializer = UserSerializer(userObject, data = {'email': requestNewEMail, "last_login" : dt.datetime.now()}, partial = True)
-                if userserializer.is_valid():
-                    userserializer.save()
-                    #render the otp useless
-                    object.delete()
-                    try:
-                        send_mail(
+                
+            #everything valud, proceed to update fully
+            userserializer = UserSerializer(userObject, data = {'email': requestNewEMail, "last_login" : dt.datetime.now()}, partial = True)
+            if userserializer.is_valid():
+                userserializer.save()
+                #render the otp useless
+                object.delete()
+                try:
+                    send_mail(
                         
-                        subject="EMAIL RESET MESSAGE FROM LECTURE TRACKERS",
+                    subject="EMAIL RESET MESSAGE FROM LECTURE TRACKERS",
                 message=f"""Subject: email Updated Successfully – LectureTracker
 
 Hello,
@@ -907,17 +910,44 @@ Dev Ope""",
                 recipient_list=[requestNewEMail],
                     )
                     
-                    except Exception as e:
-                        print (f"email  confirm not sent , why ? : f{e}")
-                    return JsonResponse({"message" : "success"})
-            else:
-                return JsonResponse({'message': 'Incorrect password'})
+                except Exception as e:
+                    print (f"email  confirm not sent , why ? : f{e}")
+                return JsonResponse({"message" : "success"})
+            
         except User.DoesNotExist:
             return JsonResponse({'message': 'User not found'})
         
         except Exception as e:
             return JsonResponse({'message': 'An error occurred', 'error': str(e)}, status=500)
         
+
+
+
+
+
+
+@api_view(["POST", "GET"])
+def frontendupdateEmail(request):
+    old_email = request.query_params.get("old_email", None)
+    otp = request.query_params.get("otp", "0")
+    otp_unique_id = request.query_params.get("otp_unique_id", "0")
+    otp_sent_time = request.query_params.get("otp_sent_time", 0)
+    
+    #if any data missing, return a page not allowed UI 
+    if old_email == None or len(otp) < 2 or otp_sent_time == 0 or len(otp_unique_id) < 2 :
+        return render(request, "api/request_incomplete/updatePassword_acces_not_allowed.html")
+    #do a quick validity check with the otp_sent_time and see of the otp never expire, it it has, return "link expired" 
+    else:
+      if (time.time() - int(otp_sent_time)) > 600:
+          return render(request, "api/request_incomplete/updatePassword_link_expired.html")
+      
+      ##params is good, now display a ui for entering new email and also otp and finalize the update by sending request to the update email / json
+      
+      
+      
+    #if no data is missing and the otp still valid, return a html where the user input the otp and new password and valodate it against db
+    return render(request,"api/request_incomplete/updateEmail_last_step.html")
+
 
 
 
@@ -1083,6 +1113,7 @@ def login(request):
                 date_joined = dt.datetime.fromisoformat(f"{userObject.date_joined}")
                 date_joined = date_joined.strftime("%d %B,%Y %H:%M")
                 #login dashbpard
+                print(f"opeeeeeeeeeee : {userObject.is_active}")
                 return render(request, "api/request_incomplete/login_dashboard.html", {
                 "username" : f"{is_auth_key_authentic._user}",
                 "email" : request_query_email2,

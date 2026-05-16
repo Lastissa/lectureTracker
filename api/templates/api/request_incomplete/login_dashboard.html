@@ -522,16 +522,30 @@
       text-align: center;
       z-index: 999;
     }
+    
+    /*rotation animation*/
+    .rotating {
+    animation: spin 2s linear infinite;
+    }
+    
+    @keyframes spin {
+    from {
+    transform: rotate(0deg);
+    }
+    to {
+    transform: rotate(360deg);
+    }
+    }
 </style>
 </head>
 <body>
 <!-- MAIN LOGO Button -->
-<a href="" style="color:blue;" >
+<div class="rotating"> <a href="" style="color:blue;"  >
   <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2">
     <circle cx="12" cy="12" r="3"></circle>
     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
   </svg>
-</a>
+</a> </div> 
 <!-- Floating AI Button -->
 <div class="ai-fab" id="aiFab">
   <svg viewBox="0 0 24 24">
@@ -558,9 +572,9 @@
     <div class="section">
     <h3>Account Settings</h3>
     <div class="grid">
-    <button class="btn" onclick="" >Update Username</button>
-    <button class="btn" onclick="">Update Email </button>
-    <button class="btn" onclick="settingsUpdatePassword()">Update Password </button>
+    <button class="btn" onclick="settingsUpdateRequest('username reset')" >Update Username</button>
+    <button class="btn" onclick="settingsUpdateRequest('email reset')">Update Email </button>
+    <button class="btn" onclick="settingsUpdateRequest('password reset')">Update Password </button>
     </div>
     </div>
     
@@ -568,13 +582,13 @@
     <div class="section">
     <h3 style="color:#f87171;">Danger Zone</h3>
     <div class="grid">
-    <a href="/deactivateAccount/" class="btn btn-danger">Deactivate Account</a>
+    <button class="btn btn-warning" onclick="activationFunc('deactivateAccount')">Deactivate Account </button>
     
     <!-- NEW -->
-    <a href="/reactivateAccount/" class="btn btn-warning">Reactivate Account</a>
+    <button class="btn btn-warning" onclick="activationFunc('reactivateAccount')">Reactivate Account </button>
     
     <!-- NEW -->
-    <a href="/deleteAccount/" class="btn btn-danger">Delete Account</a>
+    <button class="btn btn-warning" onclick="activationFunc('deleteAccount')">Delete Account </button>
     
     
     </div>
@@ -648,9 +662,9 @@
     </div>
     <div class="info-card">
     <div class="info-label">Is Active</div>
-    {% if is_active == True%}
+    {% if is_active == "True"%}
     <div class="info-value" style="color:green"  >Account is active</div>
-    {% else %}
+    {% elif is_active == "False" %}
     <div class="info-value" style="color:red" >Account is deactivated, enter settings to reactivate</div>
     {% endif %}
     </div>
@@ -668,7 +682,6 @@
 </div>
 <div id="popup" class="popup"></div>
 <script>
-
 
 
 const settingsFab = document.getElementById('settingsFab');
@@ -776,7 +789,7 @@ function showPopup(message, isError = false) {
       popup.innerHTML = message;
       popup.style.display = "block";
       popup.className = "popup" + (isError ? " error" : "");
-      if (message === "please wait..."){
+      if (message.split("...").length > 1){
       return;
       }
       else{
@@ -789,14 +802,15 @@ function showPopup(message, isError = false) {
       
     }
 
-async function settingsUpdatePassword(){
+async function settingsUpdateRequest(heading = "null"){
           const email2 = new URLSearchParams(window.location.search).get("email2");
           
-         showPopup("please wait...", false);
+         showPopup(`please wait...\nA ${heading} link will be sent to your email soon`, false);
+         //alert(`please wait...\nA ${heading} link will be sent to yo`.split("...").length);
          
         try{
         
-        const url = "/otp/json/?heading=password reset";
+        const url = `/otp/json/?heading=${heading}`;
         
         const response = await fetch(
         url, {
@@ -822,17 +836,43 @@ async function settingsUpdatePassword(){
           showPopup("Network error. Try again.", false);
         }
 }
-
+//alert(`{{username}}`);
+async function activationFunc(title = "null"){
+        const email2 = new URLSearchParams(window.location.search).get("email2");
+        const username = `{{username}}`;
+        const auth_key = new URLSearchParams(window.location.search).get("auth_key");
+        
+        showPopup(`${title}... in progress`, false);
+        
+        
+        try{
+        
+        const url = `/${title}/json/`;
+        const response = await fetch(
+        url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({"email" : email2, "username" : username, "auth_key" : auth_key})
+        });
+        
+        const text = await response.text();
+        if (response.ok) {
+        const obj = JSON.parse(text);
+        const something = obj.message;
+        showPopup(something, true);
+        }
+        else{
+        const obj = JSON.parse(text);
+        const something = obj.message;
+        showPopup(something, false);
+        
+        }
+        
+        }catch(error){
+        showPopup("Network error. Try again.", false);
+        }
+        
+}
 </script>
 </body>
 </html>
-
-ody>
-</html>
-
->
-
-ript>
-</body>
-</html>
-
