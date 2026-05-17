@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reset Password</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: system-ui, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+.container {
+  width: 380px;
+  padding: 28px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: white;
+  text-align: center;
+}
+
+.email-box {
+  font-size: 13px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: #cbd5e1;
+}
+
+.email-box span {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.otp-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.otp-box {
+  width: 42px;
+  height: 48px;
+  text-align: center;
+  font-size: 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: white;
+}
+
+.password-wrapper {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  align-items: center;
+}
+
+.password-wrapper input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: white;
+}
+
+.toggle-switch {
+  width: 46px;
+  height: 24px;
+  position: relative;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.2);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle-switch input:checked + .slider {
+  background: #3b82f6;
+}
+
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg,#3b82f6,#6366f1);
+  color: white;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: 0.2s;
+}
+
+button.enabled {
+  opacity: 1;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+.loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(6px);
+}
+
+.loader.show {
+  display: flex;
+}
+
+.loader-bar {
+  width: 120px;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loader-bar::after {
+  content: "";
+  position: absolute;
+  width: 40%;
+  height: 100%;
+  background: #3b82f6;
+  animation: slide 1s infinite ease-in-out;
+}
+
+@keyframes slide {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="email-box">
+    <span id="emailDisplay"></span>
+  </div>
+
+  <h3>Enter OTP</h3>
+
+  <div id="otpContainer" class="otp-container"></div>
+
+  <div class="password-wrapper">
+    <input type="text" id="newPassword" placeholder="New Username" />
+
+    <label class="toggle-switch">
+      <input type="checkbox" id="togglePassword">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <button id="saveBtn" disabled>Save</button>
+
+</div>
+
+<div id="loader" class="loader">
+  <div class="loader-bar"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+
+const username = params.get("old_username") || "unknown@email.com";
+const otpValue = params.get("otp") || "";
+const otpLength = otpValue.length;
+
+document.getElementById("emailDisplay").textContent = "hello, " + username;
+
+const otpContainer = document.getElementById("otpContainer");
+const saveBtn = document.getElementById("saveBtn");
+const passwordInput = document.getElementById("newPassword");
+const loader = document.getElementById("loader");
+
+// OTP boxes (NUMBERS ONLY)
+for (let i = 0; i < otpLength; i++) {
+  const input = document.createElement("input");
+  input.className = "otp-box";
+  input.maxLength = 1;
+  input.inputMode = "numeric";
+
+  input.addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, ""); // enforce numeric only
+
+    if (e.target.value && e.target.nextElementSibling) {
+      e.target.nextElementSibling.focus();
+    }
+
+    validateForm();
+  });
+
+  input.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData)
+      .getData("text")
+      .replace(/[^0-9]/g, "");
+
+    const boxes = document.querySelectorAll(".otp-box");
+    boxes.forEach((box, idx) => {
+      box.value = pasted[idx] || "";
+    });
+
+    validateForm();
+  });
+
+  otpContainer.appendChild(input);
+}
+
+// toggle password
+document.getElementById("togglePassword").addEventListener("change", function () {
+  passwordInput.type = this.checked ? "password" : "text";
+});
+
+// validate
+function validateForm() {
+  const otpFilled = [...document.querySelectorAll(".otp-box")]
+    .every(i => i.value.trim() !== "");
+
+  const passwordValid = passwordInput.value.trim().length > 0;
+
+  if (otpFilled && passwordValid) {
+    saveBtn.disabled = false;
+    saveBtn.classList.add("enabled");
+  } else {
+    saveBtn.disabled = true;
+    saveBtn.classList.remove("enabled");
+  }
+}
+
+passwordInput.addEventListener("input", validateForm);
+
+// save
+saveBtn.addEventListener("click", () => {
+  const otp = [...document.querySelectorAll(".otp-box")]
+    .map(i => i.value)
+    .join("");
+
+  handleSave(otp, passwordInput.value);
+});
+
+// FIXED URL BUILDING
+async function handleSave(otp, password) {
+
+  const currentParams = new URLSearchParams(window.location.search);
+
+  // add new password into SAME query params
+  currentParams.set("new_username", password);
+  currentParams.set("otp", otp);
+
+  const url =
+    window.location.origin +
+    window.location.pathname +
+    "json/?" +
+    currentParams.toString();
+
+  showLoader(true);
+
+  try {
+    const res = await fetch(url, {
+  method: "POST"
+});
+
+const data = await res.json();
+
+const message = data.message || "Error";
+showToast(message);
+
+// Normalize: trim + uppercase
+const normalized = String(message).trim().toUpperCase();
+
+// Handle possible typo "SUCESS" as well
+if (normalized === "SUCCESS" || normalized === "SUCESS") {
+  window.location.href = "/";
+}
+
+  } catch (err) {
+    showToast("Network error");
+  }
+
+  showLoader(false);
+}
+
+// loader
+function showLoader(state) {
+  loader.classList.toggle("show", state);
+}
+
+// toast
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+}
+</script>
+
+</body>
+</html>

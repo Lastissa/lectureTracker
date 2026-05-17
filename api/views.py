@@ -494,6 +494,8 @@ def otp(request):
             try:
                 #mail for resettingusername only
                 if requestHeading == "USERNAME RESET":
+                    #i need to get the user username before this mail is sent as without username, the button for final reset will not work
+                    person = User.objects.filter(email__iexact = requestEmail).first()
                     domain = request.build_absolute_uri('/')
                     send_mail(
                 subject="Username Reset OTP",
@@ -533,7 +535,7 @@ def otp(request):
         
             <!-- BUTTON -->
             <div style="text-align:center; margin:30px 0;">
-            <a href="{domain}updateUsername/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&email={requestEmail}"
+            <a href="{domain}updateUsername/?otp={otp}&otp_unique_id={otp_unique_id}&otp_sent_time={int(otp_sent_time)}&old_username={person}"
                 style="background:#2d89ef; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
                 Reset Username
             </a>
@@ -776,6 +778,12 @@ def updatePassword(request):
                 userObject.save()
                 #render the otp useless
                 object.delete()
+                #delete all former authkey for that same email so any existing login prior will be logout
+                existingAuthKey = AuthStorage.objects.filter(_user = userObject).first()
+                if existingAuthKey:
+                   existingAuthKey.delete()
+                   
+                #try sendb a success email before jsonresppnee 
                 try:
                     send_mail(
                         
@@ -857,7 +865,7 @@ def updateEmail(request):
     elif len(otp) != 6:
         return JsonResponse({"message" : "invalid otp"})
     elif otp_sent_time == 0:
-        return JsonReeponse({"message" : "invalid otp_sent_time"})
+        return JsonResponse({"message" : "invalid otp_sent_time"})
     elif len(otp_unique_id) < 1:
         return JsonResponse({"message" : "invalid otp_unique_id"})
         
@@ -876,7 +884,7 @@ def updateEmail(request):
         return JsonResponse({"message": "invalid credentials"})
     else:
         #credential are valid, validate otp sent time
-        if otp_sent_time >  600:
+        if (time.time() - otp_sent_time) >  600:
             return JsonResponse({"message" : "otp expired"})
         #opt have not expired,proceed to  email
         
@@ -952,9 +960,123 @@ def frontendupdateEmail(request):
 
 
 
-@api_view(['PATCH', 'POST'])
+
+
+
+
+
+@api_view(['PATCH', 'POST', "GET"])
 def updateUsername(request):
-    pass
+    requestOldUsername= request.query_params.get('old_username', None)
+    requestNewUsername= request.query_params.get('new_username', None)
+    otp = request.query_params.get("otp", '')
+    otp_sent_time = request.query_params.get("otp_sent_time", 0)#use time.time() to see the diff and check if it don reach 600 diff
+    otp_unique_id = request.query_params.get("otp_unique_id", '')
+    
+    #check if query params is complete
+    if requestOldUsername == None:
+        return Response({"message" : "invalid old_username"})
+    if requestNewUsername == None:
+        return Response({"message" : "invalid new_username"})
+    if len(otp) != 6:
+        return JsonResponse({"message" : "invalid otp"})
+    if otp_sent_time == 0:
+        return JsonResponse({"message" : "invalid otp_sent_time"})
+    if len(otp_unique_id) < 1:
+        return JsonResponse({"message" : "invalid otp_unique_id"})
+        
+    #all params have been check and no missing data, verfiy them otp now
+    try:
+        #to check if the otp value have not been tampered with
+        otp_sent_time = int(otp_sent_time)
+    except:
+        return JsonResponse({"message" : "hacker spotted"})
+    #check if old username and new usernameare not the same
+    if requestOldUsername.upper().strip() == requestNewUsername.upper().strip():
+        return JsonResponse({"message": "new username cannot be same as old usernamel"})
+    #Check if the credentials exist
+    
+    #check old username first
+    person = User.objects.filter(username = requestOldUsername.upper().strip()).first()
+    #if person return None, we dont know the user
+    if person is None:
+        return JsonResponse({"message" : "no user found"})
+    #person is not None, continue to check otp credentials
+    object = OtpSorage.objects.filter(email__iexact = person.email, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id= otp_unique_id).first()
+    if object is None:
+        return JsonResponse({"message": f"invalid credentials "})
+    else:
+        #otp exist in the db, now check if it has expired.
+        if (time.time() - otp_sent_time) >  600:
+            return JsonResponse({"message" : "otp expired"})
+        #opt have not expired
+        #check if new username is not beign used by anyone else
+        if User.objects.filter(username = requestNewUsername.upper().strip()).first() is not None:
+            return JsonResponse({"message" : "new username already taken"})
+        #new username is not being used by anyone, update the username now
+        userserializer = UserSerializer(person, data = {'username': requestNewUsername.upper().strip(), "last_login" : dt.datetime.now()}, partial = True)
+        if userserializer.is_valid():
+            userserializer.save()
+            #render the otp useless
+            object.delete()
+            try:
+                send_mail(
+                    subject="USERNAME RESET MESSAGE FROM LECTURE TRACKERS",
+                    html_message=f"""Hello,<br><br>
+
+Your <strong>LectureTracker</strong> username was recently updated. If you made this change, you can safely ignore this email.<br><br>
+
+<strong>Did you not make this request?</strong><br>
+If you did <strong>not</strong> reset your password, it means your account may be compromised. To secure your account and prevent unauthorized access, please click the button below to reset your password immediately:<br><br>
+
+<a href="https://lecture-tracker-omega.vercel.app/otp/?heading=USERNAME%20RESET" 
+style="display:inline-block;padding:12px 20px;background-color:#2563eb;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">
+Reset Your Username
+</a><br><br>
+
+<p>For your security, please do not share your login credentials or OTPs with anyone<p>.<br><br>
+<p style="color:#999; font-size:12px; text-align:center;"> Time sent: {dt.datetime.now()}</p>
+Best regards,<br>
+Dev Ope""",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[person.email],
+                )
+            except Exception as e:
+                print (f"email  confirm not sent , why ? : f{e}")
+            return JsonResponse({"message" : "success"})
+                
+            
+            
+            
+
+
+
+
+@api_view(["POST", "GET"])
+def frontendupdateUsername(request):
+    old_username = request.query_params.get("old_username", None)
+    otp = request.query_params.get("otp", "0")
+    otp_unique_id = request.query_params.get("otp_unique_id", "0")
+    otp_sent_time = request.query_params.get("otp_sent_time", 0)
+    
+    #if any data missing, return a page not allowed UI 
+    if old_username == None or len(otp) < 2 or otp_sent_time == 0 or len(otp_unique_id) < 2 :
+        return render(request, "api/request_incomplete/updatePassword_acces_not_allowed.html")
+    #do a quick validity check with the otp_sent_time and see of the otp never expire, it it has, return "link expired" 
+    else:
+      if (time.time() - int(otp_sent_time)) > 600:
+          return render(request, "api/request_incomplete/updatePassword_link_expired.html")
+      
+      ##params is good, now display a ui for entering new email and also otp and finalize the update by sending request to the update email / json
+      
+      
+      
+    #if no data is missing and the otp still valid, return a html where the user input the otp and new password and valodate it against db
+    return render(request,"api/request_incomplete/updateUsername_last_step.html")
+
+
+
+
 
 
 

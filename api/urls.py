@@ -34,8 +34,8 @@ urlpatterns = [
     path('updateEmail/', views.frontendupdateEmail),
     path('updateEmail/json/', views.updateEmail),
 
-    path('updateUsername/', views.updateUsername),
-    path('updateUsername/json/', views.frontendUpdatePassword),
+    path('updateUsername/', views.frontendupdateUsername),
+    path('updateUsername/json/', views.updateUsername),
     
     #others
     path('api_doc/', views.api_inspector),
