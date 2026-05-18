@@ -31,13 +31,14 @@ urlpatterns = [
     path('updatePassword/', views.frontendUpdatePassword),
     path('updatePassword/json/', views.updatePassword),
 
-    path('updateEmail/', views.frontendupdateEmail),
+    path('updateEmail/', views.updateEmail),
     path('updateEmail/json/', views.updateEmail),
 
-    path('updateUsername/', views.frontendupdateUsername),
-    path('updateUsername/json/', views.updateUsername),
+    path('updateUsername/', views.updateUsername),
+    path('updateUsername/json/', views.frontendUpdatePassword),
     
     #others
+    path('admin/', views.admin),
     path('api_doc/', views.api_inspector),
     
     path("login/", views.login),

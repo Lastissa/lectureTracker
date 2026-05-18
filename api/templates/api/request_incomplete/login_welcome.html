@@ -47,104 +47,145 @@
       color:white;font-size:16px;font-weight:bold;cursor:pointer;transition:0.2s ease;
     }
     .login-btn:hover{transform:translateY(-1px);background:#1d4ed8;}
+    .login-btn:disabled{opacity:0.7;cursor:not-allowed;transform:none;}
+    
+    .support-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #0000af;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 50px;
+      font: 500 14px/1 system-ui, sans-serif;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+      transition: transform 0.2s ease;
+    }
+    
+    .support-btn:hover {
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>Login</h1>
-{% if auth_key %}
-  <div id="authKeyData" data-key="{{ auth_key }}" style="display:none;"></div>
-{% endif %}
-    {% if message %}
-      <div class="message">{{ message }}</div>
-    {% endif %}
+<a href="#" id="supportBtn" class="support-btn" aria-label="Customer Care Support">
+  💬 <span>Need Help?</span>
+</a>
 
-    <form id="loginForm">
-      <div class="input-group">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="Enter your email" required />
-        <div class="error" id="emailError">Please enter a valid email address.</div>
-      </div>
+<div class="login-container">
+  <h1>Login</h1>
+  {% if auth_key %}
+    <div id="authKeyData" data-key="{{ auth_key }}" style="display:none;"></div>
+  {% endif %}
+  {% if message %}
+    <div class="message">{{ message }}</div>
+  {% endif %}
 
-      <div class="input-group">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="Enter your password" required />
-      </div>
+  <form id="loginForm">
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Enter your email" required />
+      <div class="error" id="emailError">Please enter a valid email address.</div>
+    </div>
 
-      <a class="reset-link" id="resetPasswordLink">Reset Password</a>
-      <button type="submit" class="login-btn">Login</button>
-    </form>
-  </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required />
+    </div>
 
-  <script>
-    const form = document.getElementById("loginForm");
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const emailError = document.getElementById("emailError");
-    const resetPasswordLink = document.getElementById("resetPasswordLink");
+    <a class="reset-link" id="resetPasswordLink">Reset Password</a>
+    <button type="submit" class="login-btn" id="loginBtn">Login</button>
+  </form>
+</div>
 
-    const baseDomain = window.location.origin;
+<script>
+document.getElementById('supportBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+  const message = encodeURIComponent("this is dev ope, what issue are you having, let us help with it.");
+  window.open(`https://wa.me/+2348113577875?text=${message}`, '_self');
+});
 
-    function isValidEmail(email){
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
+const form = document.getElementById("loginForm");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const emailError = document.getElementById("emailError");
+const resetPasswordLink = document.getElementById("resetPasswordLink");
+const loginBtn = document.getElementById("loginBtn");
 
-    resetPasswordLink.addEventListener("click", function(){
-      const resetUrl = `${baseDomain}/otp/?heading=${encodeURIComponent("PASSWORD RESET")}`;
-      window.location.href = resetUrl;
+const baseDomain = window.location.origin;
+
+function isValidEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+resetPasswordLink.addEventListener("click", function(e){
+  e.preventDefault();
+  const resetUrl = `${baseDomain}/otp/?heading=${encodeURIComponent("PASSWORD RESET")}`;
+  window.location.href = resetUrl;
+});
+
+form.addEventListener("submit", async function(e){
+  e.preventDefault();
+  
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  
+  if(!isValidEmail(email)){
+    emailError.style.display = "block";
+    return;
+  }
+  emailError.style.display = "none";
+  
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Please wait";
+  
+  try{
+    const response = await fetch(`${baseDomain}/login/`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,password}),
+      redirect: "follow"
     });
-
-    form.addEventListener("submit", async function(e){
-      e.preventDefault();
-
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-
-      if(!isValidEmail(email)){
-        emailError.style.display = "block";
+    
+    const html = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const messageEl = doc.querySelector(".message");
+    const messageText = messageEl ? messageEl.textContent.trim() : "";
+    
+    if(messageText === "user found"){
+      const authKeyEl = doc.querySelector("#authKeyData");
+      const authKey = authKeyEl ? authKeyEl.dataset.key : "";
+      
+      if(!authKey){
+        alert("Auth key missing in response.");
+        resetButton();
         return;
       }
-      emailError.style.display = "none";
-
-      try{
-        const response = await fetch(`${baseDomain}/login/`, {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({email,password})
-        });
-
-        const html = await response.text();
-
-        // Parse the response to check the message
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const messageEl = doc.querySelector(".message");
-        const messageText = messageEl ? messageEl.textContent.trim() : "";
-
-        // If user found, open new tab and STOP. Don't overwrite the page.
-        if(messageText === "user found"){
-          const authKeyEl = doc.querySelector("#authKeyData");
-          const authKey = authKeyEl ? authKeyEl.dataset.key : "";
-          
-          if(!authKey){
-            alert("Auth key missing in response.");
-            return;
-          }
-          
-          const url = baseDomain + "/login/?auth_key=" +  encodeURIComponent(authKey) + "&email2=" + email ;
-          window.open(url, "_self");
-          return;
-        }
-
-        // Everything else: overwrite the page like before. _self behavior.
-        document.open();
-        document.write(html);
-        document.close();
-
-      }catch(error){
-        alert("Unable to connect to the server.");
-      }
-    });
-  </script>
+      
+      const url = `${baseDomain}/login/?auth_key=${encodeURIComponent(authKey)}&email2=${encodeURIComponent(email)}`;
+      window.location.replace(url);
+      return;
+    }
+    
+    // For all other responses, navigate to the URL the server returned
+    window.location.replace(response.url);
+    
+  }catch(error){
+    alert("Unable to connect to the server.");
+    resetButton();
+  }
+  
+  function resetButton() {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login";
+  }
+});
+</script>
 </body>
 </html>

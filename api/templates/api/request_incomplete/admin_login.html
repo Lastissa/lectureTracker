@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif}
+  body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0f172a;
+    padding:20px;
+  }
+  .login-box{
+    width:100%;
+    max-width:380px;
+    background:#1e293b;
+    padding:32px;
+    border-radius:16px;
+    border:1px solid #334155;
+  }
+  h2{
+    color:#f8fafc;
+    margin-bottom:24px;
+    text-align:center;
+  }
+  input{
+    width:100%;
+    padding:12px 16px;
+    margin-bottom:16px;
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:8px;
+    color:#f8fafc;
+    font-size:16px;
+  }
+  input:focus{
+    outline:none;
+    border-color:#3b82f6;
+  }
+  button{
+    width:100%;
+    padding:12px;
+    background:#3b82f6;
+    border:none;
+    border-radius:8px;
+    color:white;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:opacity 0.2s;
+  }
+  button:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+  }
+  .loader{
+    display:inline-block;
+    width:16px;
+    height:16px;
+    border:2px solid white;
+    border-top-color:transparent;
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  
+  .popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 18px 22px;
+  border-left: 4px solid #38bdf8;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  display: none;
+  max-width: 350px;
+  font-size: 14px;
+  text-align: center;
+  z-index: 999;
+  } 
+  @keyframes spin{
+    to{transform:rotate(360deg)}
+  }
+</style>
+</head>
+<body>
+<div id="popup" class="popup"></div>
+
+  <div class="login-box" id="loginBox">
+    <h2>Admin Login</h2>
+    <input type="email" id="email" placeholder="Email" autocomplete="email">
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn">Login</button>
+  </div>
+<script type="text/javascript">
+
+function showPopup(message, isError = false) {
+      const popup = document.getElementById("popup");
+      popup.innerHTML = message;
+      popup.style.display = "block";
+      popup.className = "popup" + (isError ? " error" : "");
+
+      setTimeout(() => {
+        popup.style.display = "none";
+      }, 2000);
+    }
+
+
+showPopup(`{{message}}`, false);
+</script>
+<script>
+
+
+const loginBtn = document.getElementById('loginBtn');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+
+loginBtn.addEventListener('click', async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if(!email || !password){
+    alert('Enter email and password');
+    return;
+  }
+
+  // 1. Show loading state
+  loginBtn.disabled = true;
+  loginBtn.innerHTML = '<span class="loader"></span>';
+
+  try {
+    // 2. Update email in query param
+    const url = new URL(window.location.href);
+    url.searchParams.set('email', email);
+
+    // 3. POST request to same URL, body contains password
+    const response = await fetch(url.pathname + url.search, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({password: password})
+    });
+
+    if(!response.ok) throw new Error('Request failed');
+
+    // 4. Get HTML/CSS/JS response and replace page
+    const html = await response.text();
+    
+    // Replace current page and clear history
+    document.open();
+    document.write(html);
+    document.close();
+    
+    // Push new state and replace current history entry
+    history.replaceState(null, '', url.pathname + url.search);
+    
+  } catch(err){
+    alert('Login failed: ' + err.message);
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Login';
+  }
+});
+
+// Allow Enter key to submit
+passwordInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') loginBtn.click();
+});
+</script>
+</body>
+</html>

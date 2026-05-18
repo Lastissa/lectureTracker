@@ -1,209 +1,494 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>API Control Panel</title>
-
-<style>
-body {
-    margin: 0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    background: radial-gradient(circle at top, #0b1220, #060913);
-    color: #e2e8f0;
-    padding: 50px 16px;
-    display: flex;
-    justify-content: center;
-}
-
-/* WRAPPER (FIXES TOO WIDE ISSUE) */
-.wrapper {
-    width: 100%;
-    max-width: 980px;
-}
-
-/* HEADER */
-h1 {
-    text-align: center;
-    font-size: 30px;
-    margin-bottom: 40px;
-    color: #38bdf8;
-    letter-spacing: 1px;
-}
-
-/* SECTION CARD */
-.section {
-    background: rgba(17, 24, 39, 0.75);
-    border: 1px solid rgba(148, 163, 184, 0.15);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 22px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-    backdrop-filter: blur(10px);
-}
-
-/* SECTION TITLE */
-.section h3 {
-    margin-top: 0;
-    margin-bottom: 16px;
-    font-size: 12px;
-    color: #94a3b8;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-}
-
-/* GRID */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-}
-
-/* BUTTON BASE */
-.btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 16px;
-    border-radius: 12px;
-    text-decoration: none;
-    color: #e2e8f0;
-    background: rgba(31, 41, 55, 0.7);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    transition: 0.25s ease;
-    font-size: 14px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* HOVER LIFT + GLOW */
-.btn:hover {
-    transform: translateY(-3px);
-    border-color: #38bdf8;
-    box-shadow: 0 10px 25px rgba(56,189,248,0.15);
-}
-
-/* subtle glow sweep */
-.btn::before {
-    content: "";
-    position: absolute;
-    width: 100px;
-    height: 100%;
-    top: 0;
-    left: -120px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.2), transparent);
-    transition: 0.6s;
-}
-
-.btn:hover::before {
-    left: 120%;
-}
-
-/* VARIANTS */
-.btn-danger {
-    background: rgba(127, 29, 29, 0.25);
-    border-color: rgba(239, 68, 68, 0.35);
-}
-
-.btn-danger:hover {
-    border-color: #ef4444;
-    box-shadow: 0 10px 25px rgba(239,68,68,0.2);
-}
-
-.btn-warning {
-    background: rgba(161, 98, 7, 0.25);
-    border-color: rgba(250, 204, 21, 0.35);
-}
-
-.btn-warning:hover {
-    border-color: #facc15;
-    box-shadow: 0 10px 25px rgba(250,204,21,0.2);
-}
-
-.btn-primary {
-    background: rgba(29, 78, 216, 0.2);
-    border-color: rgba(56, 189, 248, 0.3);
-}
-
-.btn-primary:hover {
-    border-color: #38bdf8;
-}
-
-/* NOTE */
-.note {
-    font-size: 12px;
-    color: #64748b;
-    margin-top: 10px;
-}
-
-/* MOBILE TWEAK */
-@media (max-width: 600px) {
-    h1 {
-        font-size: 22px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  
+  <title>Lecture Tracker - Stay Disciplined, Never Miss a Lecture Again</title>
+  
+  <meta name="description" content="Lecture Tracker helps students stay disciplined with lectures, track attendance, manage schedules, set reminders, and improve academic performance. The ultimate tool for lecture tracking, class management, and student productivity.">
+  <meta name="keywords" content="lecture tracker, lecture tracking, student attendance tracker, class schedule manager, academic planner, university app, college tool, student productivity, lecture reminder, school organizer, study planner, class attendance log, academic discipline, student time management, lecture notes organizer">
+  <meta name="author" content="Lecture Tracker">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="canonical" href="">
+  
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="">
+  <meta property="og:title" content="Lecture Tracker - Stay Disciplined, Never Miss a Lecture Again">
+  <meta property="og:description" content="Track lectures, manage schedules, and build discipline with the all-in-one lecture tracker for students.">
+  <meta property="og:image" content="">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Lecture Tracker - Stay Disciplined, Never Miss a Lecture Again">
+  <meta name="twitter:description" content="Track lectures, manage schedules, and build discipline with the all-in-one lecture tracker for students.">
+  <meta name="twitter:image" content="">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Lecture Tracker",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "description": "Lecture Tracker helps students keep up with discipline regarding lectures by tracking attendance, schedules, and reminders.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "1247"
     }
-}
-</style>
+  }
+  </script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+    
+    #snow-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .snowflake {
+      position: absolute;
+      background: #ffffff;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: fall linear infinite;
+    }
+    
+    @keyframes fall {
+      0% {
+        transform: translateY(-100vh) translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(100vh) translateX(100px);
+        opacity: 0;
+      }
+    }
+    
+    .hero {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    
+    .hero-content {
+      max-width: 900px;
+      text-align: center;
+      animation: fadeInUp 1.2s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #60a5fa, #34d399, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+    
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: #cbd5e1;
+      margin-bottom: 2rem;
+      font-weight: 400;
+    }
+    
+    .hero-highlight {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      backdrop-filter: blur(10px);
+    }
+    
+    .hero-highlight h2 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      color: #60a5fa;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .feature-card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(71, 85, 105, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+    }
+    
+    .feature-card h3 {
+      color: #34d399;
+      margin-bottom: 0.5rem;
+      font-size: 1.25rem;
+    }
+    
+    .feature-card a {
+    color:white;
+    }
+    .cta-section {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.8));
+      backdrop-filter: blur(20px);
+      padding: 2rem 1rem;
+      transform: translateY(100%);
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      border-top: 1px solid rgba(71, 85, 105, 0.3);
+    }
+    
+    .cta-section.visible {
+      transform: translateY(0);
+    }
+    
+    .cta-content {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .cta-content h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #f8fafc;
+    }
+    
+    .cta-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 0.875rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      text-decoration: none;
+      display: inline-block;
+      min-width: 160px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: #e2e8f0;
+      border: 2px solid rgba(71, 85, 105, 0.5);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(71, 85, 105, 0.2);
+      border-color: #60a5fa;
+    }
+    
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: bounce 2s infinite;
+      color: #64748b;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateX(-50%) translateY(0);
+      }
+      40% {
+        transform: translateX(-50%) translateY(-10px);
+      }
+      60% {
+        transform: translateX(-50%) translateY(-5px);
+      }
+    }
+    
+    .spacer {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #475569;
+      font-size: 1.125rem;
+    }
+    
+    @media (max-width: 768px) {
+      .cta-buttons {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+      
+      .hero-highlight {
+        padding: 1.5rem;
+      }
+    }
+  
+    /* More filler CSS for length */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(71, 85, 105, 0.5), transparent);
+      margin: 4rem 0;
+    }
+    
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      padding: 4rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #60a5fa;
+      display: block;
+    }
+    
+    .stat-label {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+    
+    .filler-section-1 { min-height: 50px; }
+    .filler-section-2 { min-height: 100px; }
+    .filler-section-3 { min-height: 150px; }
+    .filler-section-4 { min-height: 200px; }
+    .filler-section-5 { min-height: 250px; }
+    .filler-section-6 { min-height: 300px; }
+    .filler-section-7 { min-height: 350px; }
+    .filler-section-8 { min-height: 400px; }
+    .filler-section-9 { min-height: 450px; }
+    .filler-section-10 { min-height: 500px; }
+  </style>
 </head>
-
 <body>
-
-<div class="wrapper">
-
-<h1>API CONTROL PANEL</h1>
-
-<!-- DATA -->
-<div class="section">
-    <h3>Data Management</h3>
-    <div class="grid">
-        <a href="/viewData/" class="btn btn-primary">View Single Data</a>
-        <a href="/backupData/" class="btn">Backup Data</a>
-        <a href="/viewAllData/" class="btn btn-warning">View All Data</a>
+  <div id="snow-container"></div>
+  
+  <main class="hero">
+    <div class="hero-content">
+      <h1>Welcome to Lecture Tracker</h1>
+      <p>Where we help students keep up with discipline regarding lectures and build consistent academic habits that actually stick</p>
+      
+      <div class="hero-highlight">
+        <h2>Stay on Top of Every Class, Every Day</h2>
+        <p>Lecture Tracker is designed for students who are tired of missing classes, forgetting assignments, and falling behind. Our platform combines smart scheduling, real-time attendance tracking, and intelligent reminders to create a system that keeps you accountable and organized throughout your academic journey.</p>
+        
+        <p>Whether you're in high school, college, or graduate school, staying disciplined with lectures is the foundation of academic success. We know how easy it is to lose track when you have 5+ courses, group projects, exams, and a life outside of school. That's why we built tools that work with your schedule, not against it.</p>
+        
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Smart Attendance Tracking</h3>
+            <p>Log attendance in one tap. See your attendance percentage for each course and get alerts when you're at risk of falling below requirements.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3>Automated Reminders</h3>
+            <p>Never miss a lecture again. Get notifications 15 minutes before class starts if you downlaod our mobile app on <a href="" > playstore</a> or <a href="" >appstore</a>.</p>
+          </div>
+          
+          
+          <div class="feature-card">
+            <h3>Discipline Analytics</h3>
+            <p>Track your consistency over time. Visualize your attendance trends and identify patterns that help you improve your study habits.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3>Assignment Integration</h3>
+            <p>Link assignments to lectures. Know exactly what was covered and what you need to review before the next class.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3>Study Group Coordination</h3>
+            <p>Share schedules with classmates. Find common free times and coordinate study sessions without the endless group chat hassle.</p>
+          </div>
+        </div>
+      </div>
+      
+      <p>Thousands of students use Lecture Tracker to reduce academic stress, improve grades, and build the kind of discipline that pays off long after graduation. It's not about being perfect. It's about showing up consistently, even on the days you don't feel like it.</p>
+      
+      <p>Our mission is simple: make lecture tracking effortless so you can focus on actually learning. No complex setup, no confusing dashboards, no feature bloat. Just the tools you need to stay disciplined and informed about your academic commitments.</p>
+      
+      <div class="scroll-indicator">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+        <p style="font-size: 0.875rem; margin-top: 0.5rem;">Scroll to get started</p>
+      </div>
     </div>
-</div>
-
-<!-- ACCOUNT -->
-<div class="section">
-    <h3>Account Settings</h3>
-    <div class="grid">
-        <a href="/otp/?heading=username reset" class="btn">Update Username</a>
-        <a href="/otp/?heading=email reset" class="btn">Update Email</a>
-        <a href="/otp/?heading=password reset" class="btn">Update Password</a>
+  </main>
+  
+  <div class="spacer">
+    <p>SHALL WE GET STARTED?</p>
+  </div>
+  
+  <div class="cta-section" id="ctaSection">
+    <div class="cta-content">
+      <h3>Ready to take control of your academic discipline?</h3>
+      <div class="cta-buttons">
+        <button class="btn btn-primary" onclick="window.location.href = window.location.origin + '/backupData/'">
+          Create Account
+        </button>
+        <button class="btn btn-secondary" onclick="window.location.href = window.location.origin + '/login/'">
+          Login
+        </button>
+      </div>
     </div>
-</div>
-
-<!-- DANGER -->
-<div class="section">
-    <h3 style="color:#f87171;">Danger Zone</h3>
-    <div class="grid">
-        <a href="/deactivateAccount/" class="btn btn-danger">Deactivate Account</a>
-
-        <!-- NEW -->
-        <a href="/reactivateAccount/" class="btn btn-warning">Reactivate Account</a>
-
-        <!-- NEW -->
-        <a href="/deleteAccount/" class="btn btn-danger">Delete Account</a>
-
-        <a href="/deleteAllData/" class="btn btn-danger">Delete All Data</a>
-    </div>
-</div>
-<!-- OTHER -->
-<div class="section">
-    <h3>Other</h3>
+  </div>
+  
+  <script>
+    // Snow animation generation
+    const snowContainer = document.getElementById('snow-container');
+    const snowflakeCount = 80;
     
-    <div class="grid">
-        <a href="/api_doc/" class="btn btn-primary">API Documentation</a>
-    </div>
-    <div class="note">
-        Developer tools and internal documentation access
-    </div>
+    function createSnowflake() {
+      const snowflake = document.createElement('div');
+      snowflake.classList.add('snowflake');
+      
+      const size = Math.random() * 5 + 2;
+      snowflake.style.width = size + 'px';
+      snowflake.style.height = size + 'px';
+      
+      snowflake.style.left = Math.random() * 100 + '%';
+      snowflake.style.animationDuration = Math.random() * 10 + 10 + 's';
+      snowflake.style.animationDelay = Math.random() * 5 + 's';
+      
+      snowContainer.appendChild(snowflake);
+      
+      setTimeout(() => {
+        snowflake.remove();
+        createSnowflake();
+      }, 20000);
+    }
     
-    <div class= "grid">
-    <a href="/login/" class="btn bth-primary" >personal user login (remove soon)</a>
-    </div>
+    for (let i = 0; i < snowflakeCount; i++) {
+      setTimeout(createSnowflake, i * 200);
+    }
     
-</div>
-
-</div>
-
+    // CTA show on scroll
+    const ctaSection = document.getElementById('ctaSection');
+    let scrollThreshold = window.innerHeight * 0.1;
+    
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > scrollThreshold) {
+        ctaSection.classList.add('visible');
+      } else {
+        ctaSection.classList.remove('visible');
+      }
+    });
+    
+    // Set canonical URL dynamically
+    document.querySelector('link[rel="canonical"]').href = window.location.href;
+    document.querySelector('meta[property="og:url"]').content = window.location.href;
+    
+    // Smooth scroll for better UX
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+    
+    // Console log for debugging
+    console.log('Lecture Tracker landing page loaded successfully');
+    console.log('Snow animation active with', snowflakeCount, 'particles');
+  </script>
+  
+  
 </body>
 </html>

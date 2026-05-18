@@ -3,11 +3,11 @@ import threading
 import random
 import time
 
-LOGIN_URL = "https://lecture-tracker-omega.vercel.app/viewData/json/"
+LOGIN_URL = "http://127.0.0.1:8000/viewData/json/"
 
 p = "allahu"
 
-TOTAL_USERS = 7
+TOTAL_USERS = 100
 
 def login_user():
     response = requests.get(
