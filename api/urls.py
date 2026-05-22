@@ -44,6 +44,8 @@ urlpatterns = [
     path("login/", views.login),
     path("cleartoken/", views.cleartoken),
     
+    
+    
     path("ai/", views.ai_response), 
     
     path('otp/json/', views.otp),
