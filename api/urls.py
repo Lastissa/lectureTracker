@@ -42,6 +42,8 @@ urlpatterns = [
     path('api_doc/', views.api_inspector),
     
     path("login/", views.login),
+    path("login/json/", views.login_json),
+
     path("cleartoken/", views.cleartoken),
     
     

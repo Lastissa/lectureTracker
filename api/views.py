@@ -1135,6 +1135,31 @@ def login(request):
 
 
 
+@api_view(["GET", "POST"])
+def login_json(request):
+    email = request.data.get("email", None)
+    password = request.data.get("password", "")
+    username = request.data.get("username", None)
+    
+    if email is None:
+        return JsonResponse({"message": "email required"})
+    if len(password) < 2:
+        return JsonResponse({"message": "password required"})
+    
+    #email and pass dey, validate 
+    person_exist = User.objects.filter(email__iexact = email)
+    if person_exist:
+        if person_exist.check_password(password):
+            return JsonResponse({"message" : "success"})
+        #wrong password
+        return JsonResponse({"message": "incorrect password"})
+    #no user
+    return JsonResponse({"message": "user not found"})
+
+
+
+
+
 
 
 
