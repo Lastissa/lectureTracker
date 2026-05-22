@@ -1017,7 +1017,7 @@ def ai_response(request):
     
     
     
-    if os.getenv("local_db") is not None:
+    if os.getenv("local_db") is None:
         return Response("works")
     else:
         import groq 
@@ -1038,7 +1038,7 @@ def ai_response(request):
             return JsonResponse({"message": ai_response.choices[0].message.content}, status=200)
         
         except groq.RateLimitError as e:
-            return JsonResponse({"message" : f"{e.body}"}, status = 429)   
+            return JsonResponse({"message" : f"limit reached, come back in a few minutes."}, status = 429)   
         except:
             return JsonResponse({"message" : f"{e}"})
     
