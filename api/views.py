@@ -1095,13 +1095,15 @@ def login(request):
                 return render(request, "api/request_incomplete/login_welcome.html", {"message" : f"token expired {int(time.time() - is_auth_key_authentic.expiration_time  - 1200)} sec ago"})
     
     
-    if email == None:
-        return render(request,"api/request_incomplete/login_welcome.html")
+    if email == None and request_query_email2 == None:
+        return render(request,"api/request_incomplete/login_welcome.html", {"message2" : f""})
     else:
         #Validate email in the db
         person = User.objects.filter(email__iexact = email).first()
+        if person == None:
+            # i did this so as to allow query param email too be used if request.data email is missing or not found
+            person = User.objects.filter(email__iexact = request_query_email2).first()
         if person:
-            
             #verify password when auth_key is missing -this signify user is about to leave welcome to dashboard
             if person.check_password(password):
                 #password verified, generate an auth_key for them
@@ -1120,9 +1122,6 @@ def login(request):
                 userserializer = UserSerializer(person, data = {"last_login" : dt.datetime.now()}, partial = True)
                 if userserializer.is_valid():
                     userserializer.save()
-                    print("saved yoo")
-                else:
-                    print("error saving ")
                 return render(request,"api/request_incomplete/login_welcome.html", {"message" : "user found",  "auth_key" : auth_key_value})
                 pass
             #wrong password
@@ -1150,6 +1149,13 @@ def cleartoken(request):
         except Exception as e:
             print(f"{e}")
         return render(request, "api/request_incomplete/login_welcome.html")
+
+
+
+
+
+
+
 
 
 
