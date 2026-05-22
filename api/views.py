@@ -1139,22 +1139,36 @@ def login(request):
 def login_json(request):
     email = request.data.get("email", None)
     password = request.data.get("password", "")
-    username = request.data.get("username", None)
+    user_type = request.data.get("user_type", None)
     
     if email is None:
         return JsonResponse({"message": "email required"})
     if len(password) < 2:
         return JsonResponse({"message": "password required"})
-    
-    #email and pass dey, validate 
+    if user_type is None:
+    	return JsonResponse({"message" : "user_type required (new or old)"})
+    if user_type is None:
+    	return JsonResponse({"message" : "user_type required (new or old)"})
+    if user_type == "new" or user_type == "old":
+    	pass
+    else:
+    	return JsonResponse({"message" : "user_type required (new or old)"})
+    	#email and pass dey, validate 
     person_exist = User.objects.filter(email__iexact = email)
     if person_exist:
         if person_exist.check_password(password):
-            return JsonResponse({"message" : "success"})
+            #new user
+            if user_type == "new":
+            	return JsonResponse({"message" : "email Taken"}, status = 409)
+            elif user_type == "old":
+            	return JsonResponse({"message" : "success"}, status = 200)
         #wrong password
-        return JsonResponse({"message": "incorrect password"})
+        if user_type == "new":
+        	return JsonResponse({"message" : "email Taken"}, status = 409)
+        elif user_type == "old":
+        	return JsonResponse({"message": "incorrect password"}, status = 401)
     #no user
-    return JsonResponse({"message": "user not found"})
+    return JsonResponse({"message": "user not found"}, status = 409)
 
 
 
