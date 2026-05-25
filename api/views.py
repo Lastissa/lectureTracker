@@ -203,7 +203,7 @@ def backupData(request):
             return JsonResponse({"message": "session expired"}, status = 401)
         
     if userObject is not None:
-       if userObject.check_password(requestPassword):
+       if userObject.check_password(requestPassword) or result != None:
            #update user
            #check if the username the user want to use have not been taken
            userNameCheck= User.objects.filter(username = requestUserName).first()
@@ -237,7 +237,7 @@ def backupData(request):
            allBackUpHistory.objects.create(_user = userObject, history = requestHistory, currentData = requestCurrentData)
            return Response({'message': 'updated success'}, status=200)
        else:
-           return Response({'message': 'Incorrect password'}, status=401)
+           return Response({'message': 'Incorrect password'}, status=409)#it must be 409 cos 401 make the auth expire in mobile app lecture tracker
         
     elif userObject is None:
         #check if the username is empty or missing
