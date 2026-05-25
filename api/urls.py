@@ -45,6 +45,10 @@ urlpatterns = [
     path("login/json/", views.login_json),
 
     path("cleartoken/", views.cleartoken),
+    path("generatetoken/", views.generateToken),
+
+    path("permanentLogin/", views.permanentLoginUnlessInvalidated),
+    path("alltimeHistory/", views.allTimeBackUpHistory),
     
     
     
@@ -53,7 +57,6 @@ urlpatterns = [
     path('otp/json/', views.otp),
     path('otp/', views.frontendOtp),
     
-    #Delet soon, just for experiment
-    path("temp1/", views.temp),
-    path("temp2/", views.temp2)
+    path("allOtp/", views.allOtp),
+    path("allAuth/", views.allAuth)
 ]

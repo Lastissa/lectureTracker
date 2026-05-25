@@ -27,8 +27,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 
-DEBUG =  False
-
+if os.getenv("local_db") is None:
+    DEBUG =  False
+else:
+    DEBUG =  True
 
 
 
@@ -143,7 +145,7 @@ STATIC_URL = 'static/'
 
 #Where i started writing custom data
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["lecture-tracker-omega.vercel.app", "127.0.0.1", "esta-sensate-unquickly.ngrok-free.dev"]
 # CORS_ALLOW_ALL_ORIGINS = True
 
 #smtp usage

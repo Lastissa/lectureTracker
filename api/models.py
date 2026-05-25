@@ -39,3 +39,14 @@ class AuthStorage(models.Model):
     _user = models.ForeignKey(User, on_delete=models.CASCADE)
     auth_key = models.CharField(null = False, blank = False, max_length = 200) #random string mix of Aa0symbols
     expiration_time = models.IntegerField()#time.time()
+    
+    
+#This to curb mistake backup overiding and reverse backup data
+class allBackUpHistory(models.Model):
+    _user = models.ForeignKey(User, on_delete=models.CASCADE)
+    history = models.JSONField(null=True, blank=True, default=list)
+    currentData = models.JSONField(null=True, blank=True, default=list)
+    time = models.DateTimeField(auto_now=True,)
+     
+    def __str__(self):
+         return "allBackUpHistory"

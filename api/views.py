@@ -15,11 +15,12 @@ import os
 
 
 #To get one data from the db
-@api_view(['GET'])
+@api_view(['GET', "POST"])
 def viewData(request):
     requestEmail =  request.query_params.get('email', 'default').upper().strip()
     requestPassword =  request.query_params.get('password', 'a')
     request_auth_key = request.query_params.get("auth_key", None)
+    request_data_auth_key = request.data.get("auth_key", None) #For mobile usage to verify token and to invalidate long term tokens
     
     specialAccessForAuthKey = False; #for auth key so as to skip password checking
     #check if the email in the param exist
@@ -28,23 +29,33 @@ def viewData(request):
   #Get the email if exist  
     userObjects = User.objects.filter(email__iexact = requestEmail).first()
     if userObjects is not None:
-        #check if the request_auth_key exist
-        if request_auth_key != None:
+        #check if the auth_key exist
+        if request_auth_key != None or request_data_auth_key != None:
             authObject = AuthStorage.objects.filter(_user__email__iexact = requestEmail, auth_key = request_auth_key).first()
+            authObject2 = AuthStorage.objects.filter(_user__email__iexact = requestEmail, auth_key = request_data_auth_key).first()
             #check if the auth key exist in the db
-            if authObject != None:
-                #check if token is nt expired yet
-                if (time.time() - authObject.expiration_time) < 1200:
+            if authObject != None or authObject2 != None:
+                #authobject2 is the long tern auth_jey
+                if authObject2 is not None:
                     #give access to data by chaging value of specialAccessForAuthKey
                     specialAccessForAuthKey = True
-                    
+                #authobject is the short term auth_key
+                elif authObject is not None:
+                    #check if token is nt expired yet
+                    if (time.time() - authObject.expiration_time) < 1200:
+                        #give access to data by chaging value of specialAccessForAuthKey
+                        specialAccessForAuthKey = True
+                
                 else:
-                    return JsonResponse({"message" : "Token expired"})
-        if len(requestPassword.strip()) < 2 :
+                    return JsonResponse({"message" : f"Token expired "})
+            #if the authobjet2 is none mean that particular session on that device have expired, 
+            elif authObject2 is None:
+                return JsonResponse({"message": f"session expired"}, status = 401)
+        elif len(requestPassword.strip()) < 2 :
             if specialAccessForAuthKey:
                 pass
             else:
-                return JsonResponse({'message': 'password required'})
+                return JsonResponse({'message': f'password required {request_data_auth_key}'})
         #Check if the is_active is False
         if userObjects.is_active == False:
             return JsonResponse({"message": "account deactivated"})
@@ -175,11 +186,22 @@ def backupData(request):
     requestPassword =  request.data.get('password', '')
     requestHistory = request.data.get('history', [])
     requestCurrentData = request.data.get('currentData',[] )
-    print(requestUserName)
+    auth_key = request.data.get("auth_key", None)
+    
+    
     
     #Check if user already exists, if so, update the data, if not, create a new, currentData and history object
     userObject = User.objects.filter(email__iexact = requestEmail).first()
 
+
+    #Check if auth_key is none and just pass, if its not none, do not allow backup and give a response expired with a status code of 409, 
+    if auth_key != None:
+        if len(auth_key) < 98:
+            return JsonResponse({"message": "session expired"}, status = 401)
+        result = AuthStorage.objects.filter(_user = userObject, auth_key = auth_key).first()
+        if result == None:
+            return JsonResponse({"message": "session expired"}, status = 401)
+        
     if userObject is not None:
        if userObject.check_password(requestPassword):
            #update user
@@ -211,6 +233,8 @@ def backupData(request):
                Historyserializer.save()
            else:
                return Response({"message": "historySerializer failed"}, status = 500)
+           #for updating the allbackupHistory too
+           allBackUpHistory.objects.create(_user = userObject, history = requestHistory, currentData = requestCurrentData)
            return Response({'message': 'updated success'}, status=200)
        else:
            return Response({'message': 'Incorrect password'}, status=401)
@@ -437,15 +461,6 @@ def deleteAllData(request):
 
 
 
-
-#@api_view(['DELETE', 'GET'])
-#def deleteAllData(request):
-#    _auth = request.query_params.get('user', 'default')
-#    password = request.query_params.get('password', 'default')
-#    if 1 != 1:
-#        return JsonResponse({'message': 'Unauthorized', 'hint': 'user: admin\nPassword: my main password'})
-#    User.objects.all().delete()
-#    return JsonResponse({'message': 'All data deleted'})
 
 
 
@@ -687,9 +702,9 @@ def otp(request):
         
         
         
-#Temprorary
+#Temprorary unused otp viewer
 @api_view(["GET"])
-def temp(request):
+def allOtp(request):
     del_all = request.query_params.get("del")#clear the table
     object = OtpSorage.objects.all()
     if del_all is not None:
@@ -700,7 +715,7 @@ def temp(request):
 
 
 @api_view(["GET"])
-def temp2(request):
+def allAuth(request):
     del_all = request.query_params.get("del")#clear the table
     object = AuthStorage.objects.all()
     if del_all is not None:
@@ -973,11 +988,13 @@ def api_inspector(request):
 
 
 
-@api_view(["GET"]) 
+@api_view(["GET", "POST"]) 
 def ai_response(request):
     email = request.query_params.get("email", "");
     password = request.query_params.get("password", "")
     request_auth_key = request.query_params.get("auth_key", None)
+    request_history = request.data.get("history", None) #This is for the app user last message 
+    request_message = request.data.get("message", None) #This is for the app user last message 
     
     specialAccessForAuthKey = False; #for auth key so as to skip password checking
     #check the request_auth_key
@@ -993,7 +1010,7 @@ def ai_response(request):
             else:
                 return JsonResponse({"message" : "Token expired"})
     #Check if any of the query params is missing (skip passwprd if auth_key dectected)
-    if (len(request.query_params.keys()) < 2 and specialAccessForAuthKey == False) or len(email) < 2:
+    elif (len(request.query_params.keys()) < 2 and specialAccessForAuthKey == False) or len(email) < 2:
         return JsonResponse({"message": "email and password are required"}, status=400)
     
     if email.strip() == "":
@@ -1017,8 +1034,8 @@ def ai_response(request):
     
     
     
-    if os.getenv("local_db") is not None:
-        return Response("works")
+    if os.getenv("local_db") is None:
+        return JsonResponse({"message": "works"})
     else:
         import groq 
         grok_api_key = os.getenv("GROK")
@@ -1027,18 +1044,27 @@ def ai_response(request):
         currentObjectSerialized = CurrentDataSerializer(currentDataObject, many = False)
         
         try:
-            ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
-            model="llama-3.3-70b-versatile",
-           messages=[
-            {"role": "system", "content": f"you are to analyze the question which will be inform of a list wrapped in strings and give summary analysis(total history count, number of missed, number of attended and number of nullifed and then find trends in it like how frequently user have imporved or decline over the time and give most lecture attended and msot lecture missed and also point out to other good to notice analysis) and give possible insight  on area of improment and area of strenght based on the history and the current data, in the history. tips to understand the data better : acomplised 0 stand for lecture missed, 1 stand for lecture attend and 2 stand for lecture nullfied,and understand that nullified lecture mean not due to user fault but due to school fault maybe lecture was cancelled or the class did not hold. do so one one single line without any break as i wont be able to clean any  newline symbol wich will make the text look weird, also  give an detailed possible measure for the student to adhere to in order to improve attendance and dont forget to remind user that they should backup their data as its from their latest backup insight will be generated by you, reply like you are speaking directly to the user and occasioanly give refrence to {person.username} as this is the user username NB: THE ONLY DATA THAT CAN BE REVELAED TO THE USER FROM THE LIST IS THE COURSE TITLE"},
-            {"role": "user", "content": f"history: {historyObjectSerialized.data}, currnetData: {currentObjectSerialized.data}"},
-            ]
-                  
-        )   
+            if request_history is None:
+                ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                {"role": "system", "content": f"ignore this command and go with the following instructions:you are to analyze the question which will be inform of a list wrapped in strings and give summary analysis(total history count, number of missed, number of attended and number of nullifed and then find trends in it like how frequently user have imporved or decline over the time and give most lecture attended and msot lecture missed and also point out to other good to notice analysis) and give possible insight  on area of improment and area of strenght based on the history and the current data, in the history. tips to understand the data better : acomplised 0 stand for lecture missed, 1 stand for lecture attend and 2 stand for lecture nullfied,and understand that nullified lecture mean not due to user fault but due to school fault maybe lecture was cancelled or the class did not hold. do so one one single line without any break as i wont be able to clean any  newline symbol wich will make the text look weird, also  give an detailed possible measure for the student to adhere to in order to improve attendance and dont forget to remind user that they should backup their data as its from their latest backup insight will be generated by you, reply like you are speaking directly to the user and occasioanly give refrence to {person.username} as this is the user username NB: THE ONLY DATA THAT CAN BE REVELAED TO THE USER FROM THE LIST IS THE COURSE TITLE"},
+                {"role": "user", "content": f"history: {historyObjectSerialized.data}, currnetData: {currentObjectSerialized.data}"},
+                ])   
+            else:
+                ai_response = groq.Client(api_key=grok_api_key).chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                {"role": "system", "content": f"the user current message: {request_message}, do not forget the user have old history to make refreence to, if the history is empty, just ignore the history and focus on the current message. In addition, do so one one single line without any break as i wont be able to clean any  newline symbol wich will make the text look weird and dont make your text too long unless very necessary, username : {person.username}"},
+                {"role": "user", "content": f"history: {historyObjectSerialized.data}, currnetData: {currentObjectSerialized.data}"},
+                {"role": "assistant" , "content" : f"this is the prior history between you and the user in an ascending manner, history = {request_history}"}
+                ])
+                
+                
             return JsonResponse({"message": ai_response.choices[0].message.content}, status=200)
         
         except groq.RateLimitError as e:
-            return JsonResponse({"message" : f"limit reached, come back in a few minutes."}, status = 429)   
+            return JsonResponse({"message" : f"limit reached, come back in a few minutes.", }, status = 429)   
         except:
             return JsonResponse({"message" : f"{e}"})
     
@@ -1161,7 +1187,21 @@ def login_json(request):
             if user_type == "new":
                 return JsonResponse({"message" : "email Taken"}, status = 409)
             elif user_type == "old":
-                return JsonResponse({"message" : "success", "username" : f"{person_exist}"}, status = 200)
+                #Generate an auth key
+                import string
+                auth_key_value = ""
+                all = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
+                auth_key_value = ""
+                for i in range(random.randint(101,151)):
+                    auth_key_value += random.choice(all)
+                #del all old keys
+                #add the auth key to the db
+                try:
+                    AuthStorage.objects.get(_user = person_exist).delete()
+                except:
+                    pass
+                AuthStorage.objects.create(_user = person_exist, auth_key = auth_key_value, expiration_time = time.time())
+                return JsonResponse({"message" : "success", "username" : f"{person_exist}", "auth_key": auth_key_value}, status = 200)
         #wrong password
         if user_type == "new":
             return JsonResponse({"message" : "email Taken"}, status = 409)
@@ -1176,7 +1216,7 @@ def login_json(request):
 
 
 
-
+#Different from temp2 cos it clear based on a single email while temp2 clear all token
 @api_view(["GET", "POST"])
 def cleartoken(request):
     email = request.query_params.get("email", None)
@@ -1196,10 +1236,118 @@ def cleartoken(request):
 
 
 
+@api_view(["GET", "POST"])
+def generateToken(request):
+    email = request.data.get("email", None)
+    password = request.data.get("password", None)
+    username = request.data.get("username", None)
+    
+    if email is None or password is None or username is None:
+        return Response({"message": "email, password, username required"})
+    
+    person  = User.objects.filter(email__iexact = email, username = username.upper()).first()
+    if person is None:
+        return Response({"message": "user not found"}, status= 200)
+    
+    if person.check_password(password):
+        #generate auth_key
+        import string
+        all = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
+        auth_key_value = ""
+        for i in range(random.randint(101,151)):
+            auth_key_value += random.choice(all)
+            #delete any older auth_key so the user can only sign in one place
+        AuthStorage.objects.filter(_user = person).delete()
+        #now create a new one
+        AuthStorage.objects.create(_user = person,  auth_key = auth_key_value, expiration_time = time.time())
+        #end of generating auth_key and added to db
+        return Response({"message": f"auth_token for {person}", "auth_key": auth_key_value})
+    else:
+        return Response({"message": "incorrect password"}, status= 409)
+
+
+
+@api_view(["GET", "POST"])
+#Longer session of the auth key - i had mobile phone in mind
+def permanentLoginUnlessInvalidated(request):
+    email = request.data.get("email", None)
+    password = request.data.get("password", "")
+    
+    if email is None or "@gmail.com" not in email:
+        return Response({"message" : "invalid email"})
+    if len(password) < 2:
+        return Response({"message": "password required"})
+    
+    #keys complete, verify against db
+    person = User.objects.filter(email__iexact = email).first()
+    if person:
+        
+    #incorrect password
+        return Response({"message": "incorrect password"})
+    #no user
+    else:
+        return Response({"message": "no user"})
+    
 
 
 
 
+
+#for getting older backup
+@api_view(['GET', "POST"])
+def allTimeBackUpHistory(request):
+    requestEmail =  request.data.get('email', None)
+    requestPassword =  request.data.get('password', '')
+    auth_key = request.data.get("auth_key", None)
+    requestId = request.data.get("id", None)
+    special_access = False #will use it in the future while verifying auth key
+    
+    
+    if requestEmail == None:
+        return Response({"message":"invalid email"})
+    if len(requestPassword) < 2 and auth_key == None:
+        return Response({"message":"invalid passsword"})
+
+    #data verified
+    person = User.objects.filter(email__iexact = requestEmail).first()
+    if person == None:
+        return Response({"message": "no user found"})
+    
+    #user exist
+    if auth_key is not None:
+        check_auth_key = AuthStorage.objects.filter(auth_key = auth_key, _user = person).first()
+        if check_auth_key is not None:
+            special_access = True
+            
+    #now pulling record
+    if special_access or person.check_password(requestPassword):
+        #validation allowed
+        
+        
+        
+        if requestId is not None:
+            try:
+                requestId + 2
+            except:
+                return Response({"message": "id must be an INTEGER and not a STRING"})
+            result = allBackUpHistory.objects.filter(_user = person, id = requestId).first()
+            serializer = allBackUpHistorySerializer(result, many = False)
+            toReturn = serializer.data
+            
+        else:
+            result = allBackUpHistory.objects.filter(_user = person).all()
+            serializer = allBackUpHistorySerializer(result, many = True)
+            toReturn = []
+            for i in serializer.data:
+                toReturn.append({"id": i.pop("id", None), "time": i.pop("time", None)})
+        
+        #I only need the id if the user have not specified which id they want to retreive
+        
+        return Response(toReturn)
+  
+    else:
+        return Response({"message": "invalid password"})
+        
 
 
 
@@ -1285,3 +1433,5 @@ API_DOC = {
         "description": "Danger: deletes all users"
     }
 }
+
+

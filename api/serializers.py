@@ -34,3 +34,10 @@ class AuthSorageSerializer(ModelSerializer):
     class Meta:
         model = AuthStorage
         fields = "__all__"
+        
+        
+class allBackUpHistorySerializer(ModelSerializer):
+    class Meta:
+        model = allBackUpHistory
+        fields = "__all__"
+    
