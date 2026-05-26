@@ -1164,16 +1164,15 @@ def login(request):
 
 @api_view(["GET", "POST"])
 def login_json(request):
+    username = request.data.get("username", "user")
     email = request.data.get("email", None)
     password = request.data.get("password", "")
     user_type = request.data.get("user_type", None)
-
+    
     if email is None:
         return JsonResponse({"message": "email required"})
     if len(password) < 2:
         return JsonResponse({"message": "password required"})
-    if user_type is None:
-        return JsonResponse({"message" : "user_type required (new or old)"})
     if user_type is None:
         return JsonResponse({"message" : "user_type required (new or old)"})
     if user_type == "new" or user_type == "old":
@@ -1208,7 +1207,15 @@ def login_json(request):
             return JsonResponse({"message" : "email Taken"}, status = 409)
         elif user_type == "old":
             return JsonResponse({"message": "incorrect password"}, status = 401)
+            
     #no user
+    
+    if user_type == "new":
+        try:
+        	userObject = User.objects.create_user(username= username.upper(), password= pasword, email= email) 
+        except Exception as e:
+        	return JsonResponse({"message" : f"{e}"}, status = 404)
+        return Response('Account Created', status=201)
     return JsonResponse({"message": "user not found"}, status = 409)
 
 
