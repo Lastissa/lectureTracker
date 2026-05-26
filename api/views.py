@@ -1035,7 +1035,7 @@ def ai_response(request):
     
     
     
-    if os.getenv("local_db") is None:
+    if os.getenv("local_db") is not None:
         return JsonResponse({"message": "works"})
     else:
         import groq 
