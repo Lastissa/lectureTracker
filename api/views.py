@@ -187,8 +187,7 @@ def backupData(request):
     requestHistory = request.data.get('history', [])
     requestCurrentData = request.data.get('currentData',[] )
     auth_key = request.data.get("auth_key", None)
-    
-    
+        
     
     #Check if user already exists, if so, update the data, if not, create a new, currentData and history object
     userObject = User.objects.filter(email__iexact = requestEmail).first()
@@ -1022,7 +1021,7 @@ def ai_response(request):
     #Since no missing param, check user data
     person = User.objects.filter(email__iexact = email.strip()).first()
     if person is None:
-        return JsonResponse({"message": "user not found"}, status=404)
+        return JsonResponse({"message": "user not found"}, status=400)
     elif not person.check_password(password) and specialAccessForAuthKey == False:
         return JsonResponse({"message": "Incorrect password"}, status=401)
     #Password is correcrt and user exist
@@ -1030,8 +1029,11 @@ def ai_response(request):
     if person.is_active == False:
         return JsonResponse({"message" : "account is disabled,cannot generate response until you enable it"})
     #is_active == true from here, continue
-    historyObject = History.objects.get(_user = person)
-    currentDataObject = CurrentData.objects.get(_user = person)
+    try:
+        historyObject = History.objects.get(_user = person)
+        currentDataObject = CurrentData.objects.get(_user = person)
+    except:
+       return JsonResponse({"message" : "no prior history found, perform at least one backup to get ai response"})
     
     
     
@@ -1164,7 +1166,7 @@ def login(request):
 
 @api_view(["GET", "POST"])
 def login_json(request):
-    username = request.data.get("username", "user")
+    username = request.data.get("username", None)
     email = request.data.get("email", None)
     password = request.data.get("password", "")
     user_type = request.data.get("user_type", None)
@@ -1179,6 +1181,7 @@ def login_json(request):
         pass
     else:
         return JsonResponse({"message" : "user_type required (new or old)"})
+    
         #email and pass dey, validate 
     person_exist = User.objects.filter(email__iexact = email).first()
     if person_exist:
@@ -1211,15 +1214,19 @@ def login_json(request):
     #no user
     
     if user_type == "new":
+        print(f"username is {username}")
+        if username is None:
+            return JsonResponse({"response": "username not found"})
         try:
-            User.objects.create_user(username= email.upper(), password= password, email= email)
-            return JsonResponse({"message": "account created"}, status = 200)
+            userObject =  User.objects.create_user(username= username.upper(), password= password, email= email)
+            CurrentData.objects.create(_user = userObject)
+            History.objects.create(_user = userObject)
+            return Response({"message": "Account Created"}, status=201)
         except Exception as e:
             print(e)
             if "UNIQUE constraint failed" in f"{e}":
                 return JsonResponse({"message": "Error!, username Taken"}, status = 404)
             return JsonResponse({"message" : f"{e}"}, status = 404)
-        return Response('Account Created', status=201)
     return JsonResponse({"message": "user not found"}, status = 409)
 
 
