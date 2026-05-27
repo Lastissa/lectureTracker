@@ -482,17 +482,17 @@ def otp(request):
     
     #send otp to the email and save the credentials into the db using time.time(), the validity is only 10 minutes (600 sec)
     if requestEmail == "empty":
-        return JsonResponse ({"message": "Email cannot  be empty"})
+        return JsonResponse ({"message": "Email cannot  be empty"}, status = 400)
     else:
         #email is given, check if it is valid.
         if "@GMAIL.COM" not in requestEmail:
-            return JsonResponse({"message": "Not a valid email"})
+            return JsonResponse({"message": "Not a valid email"}, status = 400)
         else:
             #email is valid, proceed to send otp
             #but what kind of otp ? the query_params(requestHeading) handle that by knowing wether we send an email for password, email or username reset or none
             #check if user exist:
             if User.objects.filter(email__iexact = requestEmail ).first() == None:
-                    return JsonResponse({"message": "no user"})
+                    return JsonResponse({"message": "no user"}, status = 400)
             
             numbers = "0123456789"
             otp = ""
@@ -683,18 +683,18 @@ def otp(request):
             )
                 #the requestHeading did not return something i recognize
                 else:
-                    return JsonResponse({"message": "Failure"})
+                    return JsonResponse({"message": "Failure"}, status = 400)
                     #bckup to the otpStorage
                 otpObject = OtpSorage.objects.create(email = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id = otp_unique_id)
                 r = OtpSorageSerializer(otpObject, many = False)
 
-                return JsonResponse({"message": "success"})
+                return JsonResponse({"message": "success"}, status = 200)
             except Exception as e:
                 # This prints to the Vercel 'Logs' tab during startup
                 print(f"Error by ope: {f'{e}'.strip().upper()} ")
                 if f"{e}".strip().upper() == "[ERRNO 7] NO ADDRESS ASSOCIATED WITH HOSTNAME":
-                    return JsonResponse({"message" : "network issue"})
-                return JsonResponse({"message": "error 500"})#This will usually happens if the os.get() in the settings is not getting the gmail password
+                    return JsonResponse({"message" : "network issue"}, status = 500)
+                return JsonResponse({"message": "error 500"}, status =500)#This will usually happens if the os.get() in the settings is not getting the gmail password
 
             
             
