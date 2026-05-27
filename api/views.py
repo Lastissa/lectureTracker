@@ -1212,9 +1212,13 @@ def login_json(request):
     
     if user_type == "new":
         try:
-        	userObject = User.objects.create_user(username= username.upper(), password= pasword, email= email) 
+            User.objects.create_user(username= email.upper(), password= password, email= email)
+            return JsonResponse({"message": "account created"}, status = 200)
         except Exception as e:
-        	return JsonResponse({"message" : f"{e}"}, status = 404)
+            print(e)
+            if "UNIQUE constraint failed" in f"{e}":
+                return JsonResponse({"message": "Error!, username Taken"}, status = 404)
+            return JsonResponse({"message" : f"{e}"}, status = 404)
         return Response('Account Created', status=201)
     return JsonResponse({"message": "user not found"}, status = 409)
 
