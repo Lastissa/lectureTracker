@@ -476,7 +476,7 @@ import time
 @api_view(['GET', 'PATCH', 'POST'])
 def otp(request):
     if len(request.data.keys()) < 1:
-        return JsonResponse({"message": "email required"})
+        return JsonResponse({"message": "email required"}, status = 400)
         
     requestEmail = request.data.get("email", "empty").strip().upper()
     
@@ -683,7 +683,7 @@ def otp(request):
             )
                 #the requestHeading did not return something i recognize
                 else:
-                    return JsonResponse({"message": "Failure"}, status = 400)
+                    return JsonResponse({"message": "Failure", "hint": "heading"}, status = 400)
                     #bckup to the otpStorage
                 otpObject = OtpSorage.objects.create(email = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id = otp_unique_id)
                 r = OtpSorageSerializer(otpObject, many = False)
