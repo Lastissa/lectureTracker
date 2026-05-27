@@ -478,7 +478,7 @@ def otp(request):
     if len(request.data.keys()) < 1:
         return JsonResponse({"message": "email required"}, status = 400)
         
-    requestEmail = request.data.get("email", "empty").strip().upper()
+    requestEmail = f"{request.data.get("email", "empty")}".strip().upper() #had to put it in a quote just to catch a NoneType
     
     #send otp to the email and save the credentials into the db using time.time(), the validity is only 10 minutes (600 sec)
     if requestEmail == "empty":
