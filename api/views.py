@@ -212,6 +212,10 @@ def backupData(request):
            if len(requestUserName ) > 0:
                 userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now(), 'username' : requestUserName}, partial = True)
            #the user did not inclide username for update
+           #before update, check if there is a diff between the old data and incoming one
+           lastBackedUp = allBackUpHistory.objects.filter(_user = userObject).last()
+           if lastBackedUp.history == requestHistory and lastBackedUp.currentData == requestCurrentData:
+               return JsonResponse({"message" : "No new Data to BackUp"}, status = 203)
            else:
                 userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now()}, partial = True)
                 print(userserializer)
@@ -1323,14 +1327,14 @@ def allTimeBackUpHistory(request):
     
     
     if requestEmail == None:
-        return Response({"message":"invalid email"})
+        return Response({"message":"invalid email"}, status = 400)
     if len(requestPassword) < 2 and auth_key == None:
-        return Response({"message":"invalid passsword"})
+        return Response({"message":"invalid passsword"}, status = 409)
 
     #data verified
     person = User.objects.filter(email__iexact = requestEmail).first()
     if person == None:
-        return Response({"message": "no user found"})
+        return Response({"message": "no user found"}, status = 400)
     
     #user exist
     if auth_key is not None:
@@ -1341,14 +1345,11 @@ def allTimeBackUpHistory(request):
     #now pulling record
     if special_access or person.check_password(requestPassword):
         #validation allowed
-        
-        
-        
         if requestId is not None:
             try:
                 requestId + 2
             except:
-                return Response({"message": "id must be an INTEGER and not a STRING"})
+                return Response({"message": "id must be an INTEGER and not a STRING"}, status = 400)
             result = allBackUpHistory.objects.filter(_user = person, id = requestId).first()
             serializer = allBackUpHistorySerializer(result, many = False)
             toReturn = serializer.data
@@ -1359,13 +1360,11 @@ def allTimeBackUpHistory(request):
             toReturn = []
             for i in serializer.data:
                 toReturn.append({"id": i.pop("id", None), "time": i.pop("time", None)})
-        
         #I only need the id if the user have not specified which id they want to retreive
-        
-        return Response(toReturn)
+        return Response({"message" : toReturn},status = 200)
   
     else:
-        return Response({"message": "invalid password"})
+        return Response({"message": "invalid password"}, status = 409)
         
 
 
