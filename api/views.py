@@ -187,7 +187,13 @@ def backupData(request):
     requestHistory = request.data.get('history', [])
     requestCurrentData = request.data.get('currentData',[] )
     auth_key = request.data.get("auth_key", None)
-        
+    result = None
+    
+    #Proof check the email
+    if "@gmail.com".upper() not in requestEmail:
+        return JsonResponse({"message": "invalid email",})
+    
+    
     
     #Check if user already exists, if so, update the data, if not, create a new, currentData and history object
     userObject = User.objects.filter(email__iexact = requestEmail).first()
