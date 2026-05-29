@@ -94,7 +94,7 @@ def viewData(request):
                  currentDataToReturn = currentDataSerializer.data["data"]
             except:
                  currentDataToReturn = currentDataSerializer.data
-            return JsonResponse({'history': historyToReturn, 'currentData': currentDataToReturn, 'user': tempDict, 'message': 'success'}, safe=False)
+            return JsonResponse({'history': list(reversed(historyToReturn)), 'currentData': currentDataToReturn, 'user': tempDict, 'message': 'success'}, safe=False)
         
         else:
             return JsonResponse({'message': 'Incorrect password'}, status = 401)
