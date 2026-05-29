@@ -191,7 +191,7 @@ def backupData(request):
     
     #Proof check the email
     if "@gmail.com".upper() not in requestEmail:
-        return JsonResponse({"message": "invalid email",})
+        return JsonResponse({"message": "invalid email","hint": "email not contain @gmail.com"})
     
     
     
