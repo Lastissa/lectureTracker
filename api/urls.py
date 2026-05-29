@@ -58,5 +58,7 @@ urlpatterns = [
     path('otp/', views.frontendOtp),
     
     path("allOtp/", views.allOtp),
-    path("allAuth/", views.allAuth)
+    path("allAuth/", views.allAuth),
+    
+    path("userDetails/", views.userDetails)
 ]

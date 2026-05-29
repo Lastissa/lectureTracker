@@ -475,10 +475,12 @@ import random
 import time
 @api_view(['GET', 'PATCH', 'POST'])
 def otp(request):
+    
     if len(request.data.keys()) < 1:
         return JsonResponse({"message": "email required"}, status = 400)
         
     requestEmail = f"{request.data.get("email", "empty")}".strip().upper() #had to put it in a quote just to catch a NoneType
+    print(requestEmail)
     
     #send otp to the email and save the credentials into the db using time.time(), the validity is only 10 minutes (600 sec)
     if requestEmail == "empty":
@@ -489,6 +491,7 @@ def otp(request):
             return JsonResponse({"message": "Not a valid email"}, status = 400)
         else:
             #email is valid, proceed to send otp
+           
             #but what kind of otp ? the query_params(requestHeading) handle that by knowing wether we send an email for password, email or username reset or none
             #check if user exist:
             if User.objects.filter(email__iexact = requestEmail ).first() == None:
@@ -725,7 +728,15 @@ def allAuth(request):
         object.delete()
         return Response({"message" : "delete all success"})
     serializer = AuthSorageSerializer(object, many = True)
-    return Response(serializer.data)
+    #i want the emails to be visible
+    try:
+        for i in serializer.data:
+            person = User.objects.get(id = int(i.pop("_user")))
+            i.update({"person_email": f"{person.email}"})
+            i.update({"person_username": f"{person}"})
+        return Response(serializer.data)
+    except Exception as e:
+        return Response([{"error": f"{e}"}, *serializer.data])
 
 
 
@@ -1312,6 +1323,56 @@ def permanentLoginUnlessInvalidated(request):
         return Response({"message": "no user"})
     
 
+
+
+
+
+
+
+@api_view(["GET"]) #The output of this endPoint must only have one 200 code as my lecture tracker heavily depends on the order of the data output
+def userDetails(request):
+    email = request.query_params.get("email", None)
+    auth_key = request.query_params.get("auth_key", "").strip()
+    print(len(auth_key))
+    
+    if len(request.query_params.keys()) < 1:
+        return JsonResponse({"message" : "email and validattion required"}, status = 400)
+    
+    if email is None:
+        return JsonResponse({"message": "invalid email"}, status = 400)
+    elif "@gmail.com".upper() not in email.upper():
+        return JsonResponse({"message" : "invalid email", "hint": "@gmail.com missing"}, status = 400)
+    if len(auth_key) == 0:
+        return JsonResponse({"message": "validationrequired"})
+    if len(auth_key) < 90:
+        return JsonResponse({"message" : "hacker spotted"}, status = 400)
+    
+    #All data have been validated, proceed to get validatee and response
+    person = User.objects.filter(email__iexact = email).first()
+    if person is None:
+        return JsonResponse({"message": "user not found"}, status = 400)
+    #User dey, continue
+    auth_key_valid = AuthStorage.objects.filter(_user = person, auth_key = auth_key).first()
+    if auth_key_valid:
+        serializer = UserSerializer(person, many = False)
+        tempDict = serializer.data
+        tempDict.pop("id")
+        iWantToChangeName = tempDict.pop("is_active")
+        print(iWantToChangeName)
+        tempDict.pop("password")
+        if iWantToChangeName == True:
+            tempDict.update({"status" : "activated"}),
+        elif iWantToChangeName== False:
+            tempDict.update({"status": "deactivated"})
+        else:
+            tempDict.update({"status": "unknown"})
+        return JsonResponse(tempDict)
+    
+    
+    #Auth key is nt valid
+    return JsonResponse({"message" : "invalid token"}, status = 400)
+    
+    
 
 
 
