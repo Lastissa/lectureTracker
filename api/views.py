@@ -179,7 +179,7 @@ def frontendViewData(request):
 
 
 #To add and update data(except update username and email) to the db,
-@api_view(['POST', 'PATCH'])
+@api_view(['POST', 'PATCH', "GET"])
 def backupData(request):
     requestUserName =  request.data.get('username', '').strip().upper()
     requestEmail =  request.data.get('email', '').strip().upper()
@@ -189,10 +189,7 @@ def backupData(request):
     auth_key = request.data.get("auth_key", None)
     result = None
     
-    #Proof check the email
-    if "@gmail.com".upper() not in requestEmail:
-        return JsonResponse({"message": "invalid email","hint": "email not contain @gmail.com"})
-    
+    #I cant proof check 
     
     
     #Check if user already exists, if so, update the data, if not, create a new, currentData and history object
