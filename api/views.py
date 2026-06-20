@@ -446,9 +446,51 @@ def reactivateAccount(request):
 
 
 #Delete single account
-@api_view(['DELETE', 'GET'])
+@api_view(['DELETE', 'GET', 'POST'])
 def deleteAccount(request):
-    return Response({"message": "mo actice in asake"})
+    email = request.data.get("email",None)
+    password = request.data.get("password", None)
+    token = request.data.get("token", None)
+    
+    print(email, password, token)
+    #validate incoming email
+    if email is None:
+        return Response({"message": "Null Credentials"}, status = 404)
+    
+    #check if user want to use token and if token is missing use passowrd
+    useToken = False
+    if token is None: pass
+    else:
+        #check if the token have been tampered with
+        if len(token) < 90:return JsonResponse({"message": "hacker spotted"}, status = 404)
+        #validate token in the db
+        tokenValidation = AuthStorage.objects.filter(_user__email__iexact = email, auth_key = token, expiration_time__lt = time.time() - 1200).first()
+        print(tokenValidation)
+        if tokenValidation is not None: useToken = True
+        else: return JsonResponse({"message": "invalid email or passkey"}, status = 409) 
+        
+    #check if usToken os true
+    if useToken is True: pass
+    else:
+        if password is None:return JsonResponse({"message": "pass key required"}, status = 409) 
+        
+    #check if the person is real
+    if useToken: person = tokenValidation._user
+    else: person = User.objects.filter(email__iexact= email).first()
+    print(person)
+    
+    if person is None: return JsonResponse({"message":"wrong email or password"})
+    else:
+        #person is not none, check password
+        if useToken: isPassword_valid = True#id true, dont ask for passowrd
+        else: isPassword_valid = person.check_password(password)
+        
+        if isPassword_valid:
+            serializePerson = UserSerializer(person, many = False)
+            person.delete()
+            return JsonResponse({"message": "Account Deleted Succesfully", "extra" : serializePerson.data})
+        else:return JsonResponse({"message": "invalid password or email"}, status = 401)
+    
 
 
 
@@ -474,7 +516,6 @@ def deleteAllData(request):
 
 
 
-import random
 import time
 @api_view(['GET', 'PATCH', 'POST'])
 def otp(request):
@@ -1154,12 +1195,8 @@ def login(request):
             #verify password when auth_key is missing -this signify user is about to leave welcome to dashboard
             if person.check_password(password):
                 #password verified, generate an auth_key for them
-                import string
-                all = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
-                auth_key_value = ""
-                for i in range(random.randint(101,151)):
-                    auth_key_value += random.choice(all)
-                  #delete any older auth_key so the user can only sign in one place
+                auth_key_value = Utility().generate_random_text(min_lenght=101, max_lenght=151, number=True, uppercase=True, lowercase= True, symbols= True)
+                #delete any older auth_key so the user can only sign in one place
                 AuthStorage.objects.filter(_user = person).delete()
                 #now create a new one
                 AuthStorage.objects.create(_user = person,  auth_key = auth_key_value, expiration_time = time.time())
@@ -1209,12 +1246,7 @@ def login_json(request):
                 return JsonResponse({"message" : "email Taken"}, status = 409)
             elif user_type == "old":
                 #Generate an auth key
-                import string
-                auth_key_value = ""
-                all = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
-                auth_key_value = ""
-                for i in range(random.randint(101,151)):
-                    auth_key_value += random.choice(all)
+                auth_key_value = Utility().generate_random_text(min_lenght=101, max_lenght=151, number=True, uppercase=True, lowercase= True, symbols= True)
                 #del all old keys
                 #add the auth key to the db
                 try:
@@ -1288,12 +1320,8 @@ def generateToken(request):
     
     if person.check_password(password):
         #generate auth_key
-        import string
-        all = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
-        auth_key_value = ""
-        for i in range(random.randint(101,151)):
-            auth_key_value += random.choice(all)
-            #delete any older auth_key so the user can only sign in one place
+        auth_key_value = Utility().generate_random_text(min_lenght=101, max_lenght=151, number=True, uppercase=True, lowercase= True, symbols= True)
+        #delete any older auth_key so the user can only sign in one place
         AuthStorage.objects.filter(_user = person).delete()
         #now create a new one
         AuthStorage.objects.create(_user = person,  auth_key = auth_key_value, expiration_time = time.time())
@@ -1436,23 +1464,128 @@ def allTimeBackUpHistory(request):
 #This is for the homepage
 @api_view(['GET'])
 def home(request):
-    return render(request, 'api/homehtml.html')
+    return render(request, 'api/homehtml.html', {"total_user" : 2, "active_users" : 3})
+
+#for getting all user in the system
+@api_view(["GET"])
+def all_users(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many = True)
+    return JsonResponse({"all_user" : len(serializer.data)})
 
 
-
-
-
-
-
-
-
-
-
+#for getting all active users us int the expiration_time as refrence
+@api_view(["GET"])
+def all_active_users(request):
+    active_personnel = AuthStorage.objects.filter(expiration_time__gt = time.time() - 1200) # check if the user token is still valid
+    serialiser = AuthSorageSerializer(active_personnel, many = True)
+    return JsonResponse({"active_user" : len(serialiser.data)})
 
 
 @api_view(["GET", "POST"])
+def send_batch_email(request):
+    pass
+
+
+
+
+
+
+#create token for admins
+@api_view(["GET", "POST"])
+def adminTokenGenerator(request):
+    email = request.data.get("email", None)
+    password = request.data.get("password", None)
+    if email == None or password == None:
+        return JsonResponse({"message": "invalid credentials"}, status = 404)
+    #check if the dta is valid
+    person = User.objects.filter(email__iexact = email).first()
+    print(person)
+    if person  == None:return JsonResponse({"message": "invalid credentials"}, status = 409)
+    if person.check_password(password):
+        #the user exist check if they are admin
+        if person.is_staff:
+            #create a short 20 min token for them
+            auth_key_value = Utility().generate_random_text(min_lenght=101, max_lenght=151, number=True, uppercase=True, lowercase= True, symbols= True)
+            #delete any older auth_key so the user can only sign in one place
+            AuthStorage.objects.filter(_user = person).delete()
+            #now create a new one
+            AuthStorage.objects.create(_user = person,  auth_key = auth_key_value, expiration_time = time.time())
+            #end of generating auth_key and added to db
+            return JsonResponse({"session_id": auth_key_value, "email": person.email}, status = 200)
+        else: return JsonResponse({"message": "only admin are allowed"}, status = 409)
+    else: return JsonResponse({"message": "invalid email or password"}, status = 409)
+
+
+#create admin account
+@api_view(["GET", "POST"])
+def createAdminAccount(request):
+    email = request.query_params.get("email", None)
+    password = request.query_params.get("password", None)
+    username = request.query_params.get("username", None)
+    
+    if email is None or password is None or username is None:
+        return JsonResponse({"message": "invalid credentials"}, status = 404)
+    
+    #check if account exist and is a student istead of staff
+    account = User.objects.filter(email__iexact = email).first()
+    if account is not None:#user exist
+        if account.is_staff == False: return JsonResponse({"message": "Student Account dectected , delete your account to be able to create an admin account; /deleteAccount/ to delete your account"}, status = 409)
+        else: return JsonResponse({"message": "Account found with this email, login into your account at /admin"})
+    #create account
+    person = User.objects.create_user(username = username.upper(), email= email.upper(), password=password, is_staff = True)
+    serializer = UserSerializer(person, many = False)
+    return JsonResponse({"message": "success", "extra" : serializer.data})
+
+#remove admin account
+@api_view(["GET", "DELETE"])
+def removeAdminAccount(request):
+    pass
+
+
+#view admins
+@api_view(["GET", "DELETE"])
+def viewAllAdminUsername(request):
+    pass
+
+
+#admin login determiner
+@api_view(["GET", "POST"])
 def admin(request):
-    return Response("a")
+    email = request.query_params.get("email", None)
+    token = request.query_params.get("session_id", None)
+
+    if token is None or email is None:
+        return  render(request,"api/admin_login.html")
+    
+    #validate the email
+    person = User.objects.filter(email__iexact = email).first()
+    if person is None:
+        return  render(request,"api/admin_login.html")
+    
+    return render(request,"api/admin.html")
+
+
+@api_view(["GET", "POST"])
+def batch_email(request):
+    #ask for token of an admin and the email cos only the admin shouldbe able to perform smthing like ths
+    email = request.query_params.get("email", None)
+    token = request.query_params.get("session_id", None)
+    if email == None or token == None:
+        return JsonResponse({"message": "invalid credentials"}, status = 404)
+    
+    person = User.objects.filter(email__iexact = email, token = token).first()
+    if person :
+        #user is real, check if they are staff
+        if person.is_staff() == False:
+            return JsonResponse({"message": "only admin are allowed"}, status = 409)
+        
+        #send the mail
+        return JsonResponse({"message": "email sent"}, status = 200)
+    
+    return JsonResponse({"message" : "invalid credentials"}, 409)
+    
+
 API_DOC = {
     "viewData": {
         "input": "query",
@@ -1517,3 +1650,27 @@ API_DOC = {
 }
 
 
+
+
+class Utility:
+    def __init__(self):
+        pass
+    def generate_random_text(self,  min_lenght, max_lenght, number = True , uppercase = True , lowercase = True , symbols = True) -> str:
+        import string
+        all = ""
+        if number is True: all = all + string.digits
+        if uppercase is True: all = all + string.ascii_uppercase 
+        if lowercase is True: all = all + string.ascii_lowercase
+        if symbols is True: all = all + string.punctuation
+        
+        auth_key_value = ""
+        if min_lenght == max_lenght :
+            for i in range(max_lenght + 1):
+                auth_key_value += random.choice(all)
+        else:
+            for i in range(random.randint(min_lenght,max_lenght)):
+                auth_key_value += random.choice(all)
+                
+        return auth_key_value
+        
+    

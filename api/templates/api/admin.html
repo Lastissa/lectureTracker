@@ -1,209 +1,682 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>API Control Panel</title>
-
-<style>
-body {
-    margin: 0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    background: radial-gradient(circle at top, #0b1220, #060913);
-    color: #e2e8f0;
-    padding: 50px 16px;
-    display: flex;
-    justify-content: center;
-}
-
-/* WRAPPER (FIXES TOO WIDE ISSUE) */
-.wrapper {
-    width: 100%;
-    max-width: 980px;
-}
-
-/* HEADER */
-h1 {
-    text-align: center;
-    font-size: 30px;
-    margin-bottom: 40px;
-    color: #38bdf8;
-    letter-spacing: 1px;
-}
-
-/* SECTION CARD */
-.section {
-    background: rgba(17, 24, 39, 0.75);
-    border: 1px solid rgba(148, 163, 184, 0.15);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 22px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-    backdrop-filter: blur(10px);
-}
-
-/* SECTION TITLE */
-.section h3 {
-    margin-top: 0;
-    margin-bottom: 16px;
-    font-size: 12px;
-    color: #94a3b8;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-}
-
-/* GRID */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-}
-
-/* BUTTON BASE */
-.btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 16px;
-    border-radius: 12px;
-    text-decoration: none;
-    color: #e2e8f0;
-    background: rgba(31, 41, 55, 0.7);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    transition: 0.25s ease;
-    font-size: 14px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* HOVER LIFT + GLOW */
-.btn:hover {
-    transform: translateY(-3px);
-    border-color: #38bdf8;
-    box-shadow: 0 10px 25px rgba(56,189,248,0.15);
-}
-
-/* subtle glow sweep */
-.btn::before {
-    content: "";
-    position: absolute;
-    width: 100px;
-    height: 100%;
-    top: 0;
-    left: -120px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.2), transparent);
-    transition: 0.6s;
-}
-
-.btn:hover::before {
-    left: 120%;
-}
-
-/* VARIANTS */
-.btn-danger {
-    background: rgba(127, 29, 29, 0.25);
-    border-color: rgba(239, 68, 68, 0.35);
-}
-
-.btn-danger:hover {
-    border-color: #ef4444;
-    box-shadow: 0 10px 25px rgba(239,68,68,0.2);
-}
-
-.btn-warning {
-    background: rgba(161, 98, 7, 0.25);
-    border-color: rgba(250, 204, 21, 0.35);
-}
-
-.btn-warning:hover {
-    border-color: #facc15;
-    box-shadow: 0 10px 25px rgba(250,204,21,0.2);
-}
-
-.btn-primary {
-    background: rgba(29, 78, 216, 0.2);
-    border-color: rgba(56, 189, 248, 0.3);
-}
-
-.btn-primary:hover {
-    border-color: #38bdf8;
-}
-
-/* NOTE */
-.note {
-    font-size: 12px;
-    color: #64748b;
-    margin-top: 10px;
-}
-
-/* MOBILE TWEAK */
-@media (max-width: 600px) {
-    h1 {
-        font-size: 22px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  
+  <title>Admin Dashboard — Lecture Tracker Management Console</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Global Cohesive Theme Tokens Mapping */
+    html[data-theme="dark"] {
+      --bg: #030712;
+      --card-bg: rgba(17, 24, 39, 0.4);
+      --card-border: rgba(255, 255, 255, 0.06);
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.12);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.1);
+      --warning: #facc15;
+      --warning-glow: rgba(250, 204, 21, 0.1);
+      --nav-bg: rgba(3, 7, 18, 0.8);
+      --input-bg: rgba(31, 41, 55, 0.3);
     }
-}
-</style>
-</head>
 
+    html[data-theme="light"] {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --card-border: rgba(15, 23, 42, 0.08);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --primary: #2563eb;
+      --primary-glow: rgba(37, 99, 235, 0.06);
+      --danger: #dc2626;
+      --danger-glow: rgba(220, 38, 38, 0.06);
+      --warning: #ca8a04;
+      --warning-glow: rgba(202, 138, 4, 0.06);
+      --nav-bg: rgba(248, 250, 252, 0.8);
+      --input-bg: #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .ambient-glow {
+      position: absolute;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 400px;
+      background: radial-gradient(circle at 50% 100px, var(--primary-glow), transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 6rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--card-border);
+      z-index: 1000;
+      margin-bottom: 2rem;
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.03em;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      background: var(--primary-glow);
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .theme-toggle {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle .sun-icon,
+    html[data-theme="light"] .theme-toggle .moon-icon { display: none; }
+    html[data-theme="light"] .theme-toggle .sun-icon { display: block; }
+
+    /* Telemetry Analytics Grid */
+    .telemetry-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .mini-refresh-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .mini-refresh-btn:hover {
+      color: var(--primary);
+      background: var(--primary-glow);
+    }
+
+    .mini-refresh-btn svg {
+      transition: transform 0.4s ease;
+    }
+
+    .mini-refresh-btn.spinning svg {
+      animation: button-spin 1s linear infinite;
+    }
+
+    @keyframes button-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .stat-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-main);
+      transition: opacity 0.15s ease;
+    }
+    
+    .stat-value.loading-fade {
+      opacity: 0.4;
+    }
+
+    /* Embedded Modern Mini Error Banner */
+    .stat-card-error {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(239, 68, 68, 0.95);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 1rem;
+      transform: translateY(100%);
+      transition: transform 0.25s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat-card-error.visible {
+      transform: translateY(0);
+    }
+
+    /* Dashboard Grid Frame */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 7fr 5fr;
+      }
+    }
+
+    .panel-block {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .panel-block h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Sub-grid system components */
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .control-grid:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .section-divider {
+      height: 1px;
+      background: var(--card-border);
+      margin: 2rem 0;
+    }
+
+    /* Interactive Functional Elements */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    textarea.input-field {
+      width: 100%;
+      min-height: 140px;
+      background-color: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea.input-field:focus {
+      border-color: var(--primary);
+    }
+
+    /* Custom App Button Engine */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid var(--card-border);
+      background: rgba(156, 163, 175, 0.05);
+      color: var(--text-main);
+      text-align: center;
+    }
+
+    .btn:hover {
+      background: rgba(156, 163, 175, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary-glow);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: var(--primary);
+    }
+    .btn-primary:hover {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-warning {
+      background: var(--warning-glow);
+      border-color: rgba(250, 204, 21, 0.3);
+      color: var(--warning);
+    }
+    .btn-warning:hover {
+      background: var(--warning);
+      color: #030712;
+      border-color: var(--warning);
+    }
+
+    .btn-danger {
+      background: var(--danger-glow);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: var(--danger);
+    }
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #ffffff;
+      border-color: var(--danger);
+    }
+
+    .note-box {
+      margin-top: 1rem;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      background: rgba(156, 163, 175, 0.03);
+      border-left: 3px solid var(--card-border);
+    }
+
+    /* Toast Messaging System */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transform: translateY(200%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 2000;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .toast.show { transform: translateY(0); }
+  </style>
+</head>
 <body>
 
-<div class="wrapper">
-
-<h1>API CONTROL PANEL</h1>
-
-<!-- DATA -->
-<div class="section">
-    <h3>Data Management</h3>
-    <div class="grid">
-        <a href="/viewData/" class="btn btn-primary">View Single Data</a>
-        <a href="/backupData/" class="btn">Backup Data</a>
-        <a href="/viewAllData/" class="btn btn-warning">View All Data</a>
+  <header>
+    <div class="nav-container">
+      <div class="brand">
+        <a href="#" class="logo">LectureTracker</a>
+        <span class="status-badge">Admin Dashboard</span>
+      </div>
+      
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle layout theme">
+        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+      </button>
     </div>
-</div>
+  </header>
 
-<!-- ACCOUNT -->
-<div class="section">
-    <h3>Account Settings</h3>
-    <div class="grid">
-        <a href="/otp/?heading=username reset" class="btn">Update Username</a>
-        <a href="/otp/?heading=email reset" class="btn">Update Email</a>
-        <a href="/otp/?heading=password reset" class="btn">Update Password</a>
-    </div>
-</div>
-
-<!-- DANGER -->
-<div class="section">
-    <h3 style="color:#f87171;">Danger Zone</h3>
-    <div class="grid">
-        <a href="/deactivateAccount/" class="btn btn-danger">Deactivate Account</a>
-
-        <!-- NEW -->
-        <a href="/reactivateAccount/" class="btn btn-warning">Reactivate Account</a>
-
-        <!-- NEW -->
-        <a href="/deleteAccount/" class="btn btn-danger">Delete Account</a>
-
-        <a href="/deleteAllData/" class="btn btn-danger">Delete All Data</a>
-    </div>
-</div>
-<!-- OTHER -->
-<div class="section">
-    <h3>Other</h3>
+  <div class="ambient-glow"></div>
+  
+  <div class="container">
     
-    <div class="grid">
-        <a href="/api_doc/" class="btn btn-primary">API Documentation</a>
-    </div>
-    <div class="note">
-        Developer tools and internal documentation access
-    </div>
-    
-    <div class= "grid">
-    <a href="/login/" class="btn bth-primary" >personal user login (remove soon)</a>
-    </div>
-    
-</div>
+    <section class="telemetry-row">
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">Total Users Registered</div>
+          <button class="mini-refresh-btn" id="refreshTotalUsersBtn" aria-label="Fetch current total registration count">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><polyline points="21 3 21 8 16 8"></polyline></svg>
+          </button>
+        </div>
+        <div class="stat-value" id="totalUsersCount">--</div>
+        <div class="stat-card-error" id="totalUsersError">
+          <span>Failed to retrieve total user count metrics</span>
+        </div>
+      </div>
 
-</div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">Active Student Sessions</div>
+          <button class="mini-refresh-btn" id="refreshActiveUsersBtn" aria-label="Fetch current active sessions count">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><polyline points="21 3 21 8 16 8"></polyline></svg>
+          </button>
+        </div>
+        <div class="stat-value" id="activeUsersCount">--</div>
+        <div class="stat-card-error" id="activeUsersError">
+          <span>Failed to retrieve active monitoring metrics</span>
+        </div>
+      </div>
+    </section>
 
+    <div class="dashboard-grid">
+      
+      <div class="panel-block">
+        
+        <h3>Data Management</h3>
+        <div class="control-grid">
+          <a href="/viewData/" class="btn btn-primary">Search Individual User Data</a>
+          <a href="/backupData/" class="btn">Backup Database Snapshot</a>
+          <a href="/viewAllData/" class="btn btn-warning">View Complete Data Records</a>
+        </div>
+        
+        <div class="section-divider"></div>
+        
+        <h3>Account Link Management</h3>
+        <div class="control-grid">
+          <a href="/otp/?heading=username reset" class="btn">Generate Username Reset Link</a>
+          <a href="/otp/?heading=email reset" class="btn">Generate Email Reset Link</a>
+          <a href="/otp/?heading=password reset" class="btn">Generate Password Reset Link</a>
+        </div>
+
+        <div class="section-divider"></div>
+        
+        <h3 style="color: var(--danger);">Danger Zone (Destructive Actions)</h3>
+        <div class="control-grid">
+          <a href="/deactivateAccount/" class="btn btn-danger">Deactivate Account</a>
+          <a href="/reactivateAccount/" class="btn btn-warning">Reactivate Account</a>
+          <a href="/deleteAccount/" class="btn btn-danger">Permanently Delete Account</a>
+          <a href="/deleteAllData/" class="btn btn-danger">Purge All System Telemetry</a>
+        </div>
+      </div>
+
+      <div class="panel-block" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <h3>Global Communications</h3>
+          
+          <div class="input-group">
+            <label for="emailBody">Broadcast Message Body (Plain text or Markdown formats)</label>
+            <textarea id="emailBody" class="input-field" placeholder="Type a message to instantly dispatch to all registered user accounts..."></textarea>
+          </div>
+          
+          <button id="sendMailBtn" class="btn btn-primary" style="width: 100%; padding: 0.85rem;">
+            Send System Broadcast Email
+          </button>
+        </div>
+
+        <div>
+          <div class="section-divider"></div>
+          <h3>System Infrastructure Reference</h3>
+          <div class="control-grid" style="grid-template-columns: 1fr;">
+            <a href="/api_doc/" class="btn btn-primary" style="justify-content: flex-start;">
+              &rarr; Open Technical API Documentation
+            </a>
+          </div>
+          <div class="note-box">
+            Authorization variables are fetched out of session metadata parameters automatically. Keep terminal links secure.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="systemToast">Notification successfully dispatched.</div>
+
+  <script>
+    // Theme Switcher Engine
+    const themeToggle = document.getElementById('themeToggle');
+    const htmlEl = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    htmlEl.setAttribute('data-theme', savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+
+    themeToggle.addEventListener('click', () => {
+      const activeTheme = htmlEl.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      htmlEl.setAttribute('data-theme', activeTheme);
+      localStorage.setItem('theme', activeTheme);
+    });
+
+    // Toast Controller Engine
+    const systemToast = document.getElementById('systemToast');
+    function triggerToast(text) {
+      systemToast.innerText = text;
+      systemToast.classList.add('show');
+      setTimeout(() => systemToast.classList.remove('show'), 4000);
+    }
+
+    // Nodes Core Definitions
+    const totalUsersNode = document.getElementById('totalUsersCount');
+    const refreshTotalBtn = document.getElementById('refreshTotalUsersBtn');
+    const totalUsersError = document.getElementById('totalUsersError');
+
+    const activeUsersNode = document.getElementById('activeUsersCount');
+    const refreshActiveBtn = document.getElementById('refreshActiveUsersBtn');
+    const activeUsersError = document.getElementById('activeUsersError');
+
+    // Asynchronous Execution Methods
+    async function fetchTotalUsersMetrics() {
+      refreshTotalBtn.classList.add('spinning');
+      totalUsersNode.classList.add('loading-fade');
+      totalUsersNode.innerText = "--"; // Fallback/Loading text placeholder state
+      totalUsersError.classList.remove('visible');
+      
+      try {
+        const response = await fetch(window.location.origin + '/allUser/');
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.all_user !== undefined && data.all_user !== null) {
+            totalUsersNode.innerText = data.all_user;
+          } else {
+            throw new Error("Invalid format key structure returned");
+          }
+        } else {
+          throw new Error(`HTTP Error Status: ${response.status}`);
+        }
+      } catch (err) {
+        console.error(err);
+        totalUsersNode.innerText = "--";
+        totalUsersError.classList.add('visible');
+      } finally {
+        totalUsersNode.classList.remove('loading-fade');
+        refreshTotalBtn.classList.remove('spinning');
+      }
+    }
+
+    async function fetchActiveUsersMetrics() {
+      refreshActiveBtn.classList.add('spinning');
+      activeUsersNode.classList.add('loading-fade');
+      activeUsersNode.innerText = "--"; // Fallback/Loading text placeholder state
+      activeUsersError.classList.remove('visible');
+      
+      try {
+        const response = await fetch(window.location.origin + '/allActiveUser/');
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.active_user !== undefined && data.active_user !== null) {
+            activeUsersNode.innerText = data.active_user;
+          } else {
+            throw new Error("Invalid format key structure returned");
+          }
+        } else {
+          throw new Error(`HTTP Error Status: ${response.status}`);
+        }
+      } catch (err) {
+        console.error(err);
+        activeUsersNode.innerText = "--";
+        activeUsersError.classList.add('visible');
+      } finally {
+        activeUsersNode.classList.remove('loading-fade');
+        refreshActiveBtn.classList.remove('spinning');
+      }
+    }
+
+    // Manual Element Click Handling Hooks
+    refreshTotalBtn.addEventListener('click', fetchTotalUsersMetrics);
+    refreshActiveBtn.addEventListener('click', fetchActiveUsersMetrics);
+
+    // Eager Lifecycle On-Load Ignition Calls
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchTotalUsersMetrics();
+      fetchActiveUsersMetrics();
+    });
+
+    // Bulk Notification Broadcast Engine
+    document.getElementById('sendMailBtn').addEventListener('click', async () => {
+      const bodyInput = document.getElementById('emailBody');
+      const emailContent = bodyInput.value.trim();
+      
+      if (!emailContent) {
+        triggerToast("Broadcast requires valid notification context text.");
+        return;
+      }
+
+      const URLQueryParameters = new URLSearchParams(window.location.search);
+      const activeSessionID = URLQueryParameters.get('session_id') || "";
+
+      try {
+        const response = await fetch('/batch_email/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            email_body: emailContent,
+            password: activeSessionID
+          })
+        });
+
+        if (response.ok) {
+          triggerToast("Broadcast dispatch processing completed.");
+          bodyInput.value = "";
+        } else {
+          triggerToast(`Failed to dispatch broadcast email. Status: ${response.status}`);
+        }
+      } catch (networkError) {
+        triggerToast("Network handshake timeout. Try again.");
+        console.error(networkError);
+      }
+    });
+
+    // Django standard CSRF extraction logic
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
 </body>
 </html>

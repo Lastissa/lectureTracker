@@ -20,7 +20,7 @@ class CurrentDataSerializer(ModelSerializer):
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','username', 'email', 'password', 'last_login', 'date_joined', 'is_active']
+        fields = ['id','username', 'email', 'last_login', 'date_joined', 'is_active', 'is_staff']
         
 
 class OtpSorageSerializer(ModelSerializer):

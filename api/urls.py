@@ -23,6 +23,7 @@ urlpatterns = [
     # Mass functions
     path('deleteAllData/', views.deleteAllData),
     path('deleteAllData/json/', views.deleteAllData),
+    path('batch_email/', views.batch_email),
 
     path('viewAllData/', views.frontendViewAllData),
     path('viewAllData/json/', views.viewAllData),
@@ -38,7 +39,7 @@ urlpatterns = [
     path('updateUsername/json/', views.frontendUpdatePassword),
     
     #others
-    path('admin/', views.admin),
+   
     path('api_doc/', views.api_inspector),
     
     path("login/", views.login),
@@ -59,6 +60,13 @@ urlpatterns = [
     
     path("allOtp/", views.allOtp),
     path("allAuth/", views.allAuth),
+    path("allUser/", views.all_users),
+    path("allActiveUser/", views.all_active_users),
     
-    path("userDetails/", views.userDetails)
+    path("userDetails/", views.userDetails),
+    
+    #admin
+     path('admin/', views.admin),
+     path("createAdminAccount/", views.createAdminAccount),
+     path("adminTokenGenerator/", views.adminTokenGenerator)
 ]
