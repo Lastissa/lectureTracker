@@ -1469,7 +1469,7 @@ def home(request):
 #for getting all user in the system
 @api_view(["GET"])
 def all_users(request):
-    users = User.objects.all()
+    users = User.objects.filter(is_staff = False).all()#get only the student and ignore the admin
     serializer = UserSerializer(users, many = True)
     return JsonResponse({"all_user" : len(serializer.data)})
 
@@ -1477,14 +1477,10 @@ def all_users(request):
 #for getting all active users us int the expiration_time as refrence
 @api_view(["GET"])
 def all_active_users(request):
-    active_personnel = AuthStorage.objects.filter(expiration_time__gt = time.time() - 1200) # check if the user token is still valid
+    active_personnel = AuthStorage.objects.filter(expiration_time__gt = time.time() - 1200, _user__is_staff = False) # check if the user token is still valid for only student
     serialiser = AuthSorageSerializer(active_personnel, many = True)
     return JsonResponse({"active_user" : len(serialiser.data)})
 
-
-@api_view(["GET", "POST"])
-def send_batch_email(request):
-    pass
 
 
 
@@ -1558,6 +1554,7 @@ def admin(request):
     if token is None or email is None:
         return  render(request,"api/admin_login.html")
     
+    print(email, token)
     #validate the email
     person = User.objects.filter(email__iexact = email).first()
     if person is None:
@@ -1581,7 +1578,7 @@ def batch_email(request):
             return JsonResponse({"message": "only admin are allowed"}, status = 409)
         
         #send the mail
-        return JsonResponse({"message": "email sent"}, status = 200)
+        return JsonResponse({"message": "email sent placeholder"}, status = 200)
     
     return JsonResponse({"message" : "invalid credentials"}, 409)
     
