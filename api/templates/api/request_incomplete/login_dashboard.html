@@ -526,7 +526,7 @@
         <div class="num" id="statMissed">--</div>
       </div>
       <div class="stat-card null">
-        <div class="label">Unmarked Slots</div>
+        <div class="label">Nullifed Slots</div>
         <div class="num" id="statNull">--</div>
       </div>
     </div>
@@ -693,16 +693,17 @@ async function loadHistory(){
     const data = await res.json();
     const container = document.getElementById('historyContainer');
     container.innerHTML = '';
-
+    
     if(data.history && data.history.length){
       data.history.forEach(item => { container.appendChild(renderHistoryItem(item)); });
-
+      
       let attended = 0, missed = 0, nullCount = 0;
       data.history.forEach(item => {
+        console.log(item)
         const status = (item && (item.status || item.attendance || item.state) || '').toString().toLowerCase();
-        if(status.includes('present') || status.includes('attend')) attended++;
-        else if(status.includes('absent') || status.includes('miss')) missed++;
-        else nullCount++;
+        if(item?.["accomplised"] == 1) attended++;
+        else if(item?.["accomplised"] == 0) missed++;
+        else if(item?.["accomplised"] == 2) nullCount++;
       });
       const statAttend = document.getElementById('statAttend');
       const statMissed = document.getElementById('statMissed');
