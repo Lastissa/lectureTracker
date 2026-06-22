@@ -201,11 +201,12 @@ def backupData(request):
            #the user did not inclide username for update
            #before update, check if there is a diff between the old data and incoming one
            lastBackedUp = allBackUpHistory.objects.filter(_user = userObject).last()
-           if lastBackedUp.history == requestHistory and lastBackedUp.currentData == requestCurrentData:
-               return JsonResponse({"message" : "No new Data to BackUp"}, status = 203)
+           #check if last backup exist
+           if lastBackedUp:
+               if lastBackedUp.history == requestHistory and lastBackedUp.currentData == requestCurrentData:
+                return JsonResponse({"message" : "No new Data to BackUp"}, status = 203)
            else:
                 userserializer = UserSerializer(userObject, data = {'last_login': dt.datetime.now()}, partial = True)
-                print(userserializer)
            if userserializer.is_valid():
                userserializer.save()
            else:
