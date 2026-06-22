@@ -67,6 +67,8 @@ urlpatterns = [
     
     #admin
      path('admin/', views.admin),
+     path("admin/logout/", views.adminLogout),
      path("createAdminAccount/", views.createAdminAccount),
+     path("createAdminAccountLogic/", views.createAdminAccountLogic),
      path("adminTokenGenerator/", views.adminTokenGenerator)
 ]

@@ -2,199 +2,304 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Password Reset</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>Password Reset — LectureTracker</title>
+
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #e2e8f0;
-      background: linear-gradient(270deg, #0f172a, #1e293b, #020617);
-      background-size: 600% 600%;
-      animation: gradientShift 12s ease infinite;
+    :root {
+      --bg: #0a0e1a;
+      --panel: rgba(12, 17, 32, 0.8);
+      --surface: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f4f6fb;
+      --muted: #97a1b8;
+      --accent: #6d5bff;
+      --accent-2: #22d3ee;
+      --success: #34d399;
+      --danger: #f87171;
+      --radius: 20px;
+      --radius-sm: 14px;
+      --shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
 
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(800px 400px at 20% -10%, rgba(109,91,255,0.18) 0%, transparent 60%),
+        radial-gradient(600px 350px at 90% 90%, rgba(34,211,238,0.14) 0%, transparent 60%),
+        var(--bg);
+      color: var(--text);
+      padding: 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Space Grotesk', sans-serif;
     }
 
     .card {
-      background: rgba(17, 24, 39, 0.85);
-      backdrop-filter: blur(10px);
-      padding: 30px;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 430px;
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     h2 {
-      color: #38bdf8;
-      text-align: center;
-      margin-bottom: 15px;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     p {
-      text-align: center;
-      font-size: 14px;
-      color: #cbd5e1;
-      margin-bottom: 20px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.5;
     }
 
     .input-group {
       position: relative;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .input-group input {
-      width: 90%;
-      padding: 14px 12px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #020617;
-      color: #e2e8f0;
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
       outline: none;
-      font-size: 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input-group input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(109, 91, 255, 0.15);
     }
 
     .input-group label {
       position: absolute;
-      left: 12px;
+      left: 16px;
       top: 14px;
-      font-size: 13px;
-      color: #64748b;
+      font-size: 0.95rem;
+      color: var(--muted);
       pointer-events: none;
-      transition: 0.2s;
-      background: #020617;
+      transition: 0.2s ease;
+      background: transparent;
       padding: 0 4px;
+      transform-origin: left center;
     }
 
     .input-group input:focus + label,
     .input-group input:not(:placeholder-shown) + label {
-      top: -8px;
-      font-size: 11px;
-      color: #38bdf8;
+      top: -10px;
+      left: 12px;
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: var(--bg);
+      padding: 0 8px;
+    }
+
+    /* Ensure placeholder is visible */
+    .input-group input::placeholder {
+      color: transparent;
     }
 
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       border: none;
-      border-radius: 8px;
-      background: #38bdf8;
-      color: black;
-      font-weight: bold;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent), #5645d9);
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
       cursor: pointer;
-      position: relative;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, opacity 0.2s ease;
+      box-shadow: 0 10px 26px -8px rgba(109,91,255,0.5);
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px -8px rgba(109,91,255,0.65);
+    }
+
+    button:active {
+      transform: translateY(0);
     }
 
     button:disabled {
-      opacity: 0.6;
+      opacity: 0.7;
       cursor: not-allowed;
+      transform: none;
     }
 
     .back-btn {
-      margin-top: 10px;
-      background: #334155;
-      color: #e2e8f0;
+      margin-top: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: none;
+      font-weight: 600;
+      background: transparent;
     }
 
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #0f172a;
-      color: #e2e8f0;
-      padding: 18px 22px;
-      border-left: 4px solid #38bdf8;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-      display: none;
-      max-width: 350px;
-      font-size: 14px;
-      text-align: center;
-      z-index: 999;
-    }
-
-    .error {
-      border-left-color: #f87171;
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: none;
     }
 
     .spinner {
-      border: 3px solid #334155;
-      border-top: 3px solid #38bdf8;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
       border-radius: 50%;
       width: 18px;
       height: 18px;
-      animation: spin 1s linear infinite;
+      animation: spin 0.7s linear infinite;
       display: inline-block;
-      margin-right: 8px;
-      vertical-align: middle;
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      to { transform: rotate(360deg); }
     }
 
+    /* Popup toast */
+    .popup {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px 24px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      opacity: 0;
+      pointer-events: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      z-index: 999;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      border-left: 4px solid var(--accent-2);
+      white-space: pre-line;
+      max-width: 90vw;
+    }
 
-.support-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: #38bdf8;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 50px;
-  font: 500 14px/1 system-ui, sans-serif;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 9999;
-  transition: transform 0.2s ease;
-}
+    .popup.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
 
-.support-btn:hover {
-  transform: translateY(-2px);
-}
+    .popup.error {
+      border-left-color: var(--danger);
+    }
 
-.support-btn span {
-  display: inline;
-}
+    /* Support button */
+    .support-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      color: #0a0e1a;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 22px rgba(109,91,255,0.4);
+      z-index: 9999;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      font-family: 'Space Grotesk', sans-serif;
+    }
 
-@media (max-width: 480px) {
-/*for small screen*/
+    .support-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(109,91,255,0.55);
+    }
 
-  /*.support-btn span {
-    display: none; /* hide text on small screens, keep icon only */
-  /*}
-  .support-btn {
-    padding: 14px;
-    border-radius: 50%;
-  }*/
-}
+    @media (max-width: 480px) {
+      .support-btn span {
+        display: none;
+      }
+      .support-btn {
+        padding: 14px;
+        border-radius: 50%;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .card {
+        padding: 24px 20px;
+      }
+      h2 {
+        font-size: 1.6rem;
+      }
+    }
   </style>
 </head>
-
 <body>
- <a href="#" id="supportBtn" class="support-btn" aria-label="Customer Care Support">
- 💬 <span>Need Help?</span>
- </a>
-  <div class="card">
-  
-    <h2 id="headingText">Password Reset</h2>
+  <!-- Customer Care Support Button -->
+  <a href="#" id="supportBtn" class="support-btn" aria-label="Customer Care Support">
+    💬 <span>Need Help?</span>
+  </a>
 
-    <p id="subText">Enter your email to receive a <span id="dynamicText">password</span> link.</p>
+  <div class="card">
+    <h2 id="headingText">Password Reset</h2>
+    <p>Enter your email to receive a <span id="dynamicText">password</span> reset link.</p>
 
     <div class="input-group">
       <input type="email" id="email" placeholder=" " required>
@@ -202,89 +307,86 @@
     </div>
 
     <button id="btn" onclick="sendOtp()">Continue</button>
-
-    <button class="back-btn" onclick="goBack()">Go Back</button>
+    <button class="back-btn" onclick="goBack()">← Go Back</button>
   </div>
 
   <div id="popup" class="popup"></div>
 
   <script>
-  document.getElementById('supportBtn').addEventListener('click', function(e) {
-  e.preventDefault();
-  const message = encodeURIComponent("this is dev ope, what issue are you having, let us help with it.");
-  window.open(`https://wa.me/+2348113577875?text=${message}`, '_blank');
-  });
+    // Support button (Dev Ope WhatsApp)
+    document.getElementById('supportBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const message = encodeURIComponent("Hi Dev Ope, I need help with the password reset page.");
+      window.open(`https://wa.me/+2348113577875?text=${message}`, '_blank');
+    });
+
     function goBack() {
       window.history.back();
     }
 
     function showPopup(message, isError = false) {
       const popup = document.getElementById("popup");
-      popup.innerHTML = message;
-      popup.style.display = "block";
-      popup.className = "popup" + (isError ? " error" : "");
-
-      setTimeout(() => {
-        popup.style.display = "none";
-      }, 4000);
+      popup.textContent = message;
+      popup.className = "popup show" + (isError ? " error" : "");
+      
+      if (!message.includes("...")) {
+        setTimeout(() => {
+          popup.classList.remove('show');
+        }, 4000);
+      }
     }
 
     function setLoading(isLoading) {
       const btn = document.getElementById("btn");
       btn.disabled = isLoading;
-
-      if (isLoading) {
-        btn.innerHTML = `<span class="spinner"></span>Processing...`;
-      } else {
-        btn.innerHTML = "Continue";
-      }
+      btn.innerHTML = isLoading ? `<span class="spinner"></span>Processing...` : "Continue";
     }
 
     async function sendOtp() {
-      const email = document.getElementById("email").value;
+      const email = document.getElementById("email").value.trim();
 
       if (!email) {
-        showPopup("Please enter a valid email", true);
+        showPopup("Please enter a valid email address.", true);
         return;
       }
 
       setLoading(true);
 
       try {
-        // Append current query params to /otp/json/
         const currentParams = window.location.search;
         const url = `/otp/json/${currentParams}`;
 
         const response = await fetch(url, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: email })
         });
 
         const text = await response.text();
-        
-        
-        
-        
+        let message = "Something went wrong. Please try again.";
 
-        if (response.ok) {
-        const obj = JSON.parse(text);
-        const something = obj.message;
-          showPopup(something);
-        } else {
-          showPopup(text, true);
+        try {
+          // Attempt to parse JSON and extract the `message` field
+          const data = JSON.parse(text);
+          if (data && data.message) {
+            message = data.message;
+          } else {
+            message = text; // fallback to raw text if no message key
+          }
+        } catch (e) {
+          // Not JSON, use the raw response text
+          message = text || "Unexpected server response.";
         }
 
+        showPopup(message, !response.ok);
       } catch (error) {
-        showPopup("Network error. Try again.", true);
+        showPopup("Network error. Please check your connection.", true);
       }
 
       setLoading(false);
     }
 
-    // HANDLE DJANGO CONTEXT VARIABLE
+    // Inject Django heading context into the UI
     (function () {
       const heading = "{{ heading|default:'' }}";
       const headingEl = document.getElementById("headingText");
@@ -294,11 +396,10 @@
         headingEl.textContent = heading;
         dynamicTextEl.textContent = heading.toLowerCase();
       } else {
-        headingEl.textContent = "No Param";
-        dynamicTextEl.textContent = "null";
+        headingEl.textContent = "Password Reset";
+        dynamicTextEl.textContent = "password reset";
       }
     })();
   </script>
-
 </body>
 </html>

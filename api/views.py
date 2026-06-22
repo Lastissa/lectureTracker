@@ -24,8 +24,7 @@ def viewData(request):
     
     specialAccessForAuthKey = False; #for auth key so as to skip password checking
     #check if the email in the param exist
-    if requestEmail == "DEFAULT":
-        return JsonResponse({"message":"user not found", "hint": "add email to the query param"})
+    if requestEmail == "DEFAULT":return JsonResponse({"message":"user not found", "hint": "add email to the query param"})
   #Get the email if exist  
     userObjects = User.objects.filter(email__iexact = requestEmail).first()
     if userObjects is not None:
@@ -52,13 +51,10 @@ def viewData(request):
             elif authObject2 is None:
                 return JsonResponse({"message": f"session expired"}, status = 401)
         elif len(requestPassword.strip()) < 2 :
-            if specialAccessForAuthKey:
-                pass
-            else:
-                return JsonResponse({'message': f'password required {request_data_auth_key}'})
+            if specialAccessForAuthKey: pass
+            else: return JsonResponse({'message': f'password required {request_data_auth_key}'})
         #Check if the is_active is False
-        if userObjects.is_active == False:
-            return JsonResponse({"message": "account deactivated"})
+        if userObjects.is_active == False: return JsonResponse({"message": "account deactivated"})
         if userObjects.check_password(requestPassword) or specialAccessForAuthKey :
             historyObjects = History.objects.get(_user = userObjects)
             #everything id accutate, lets go
@@ -103,12 +99,6 @@ def viewData(request):
         return JsonResponse({"message":"user not found"})
         
     
-
-
-
-
-
-
 #for the frontend aspect - GET ONE DATA 
 @api_view(['GET', "POST", "PATCH", "PUT"])
 def frontendViewData(request):
@@ -171,12 +161,6 @@ def frontendViewData(request):
             return  render(request, "api/request_incomplete/viewData_no_user.html")
         
         
-
-
-
-
-
-
 
 #To add and update data(except update username and email) to the db,
 @api_view(['POST', 'PATCH', "GET"])
@@ -450,12 +434,16 @@ def reactivateAccount(request):
 def deleteAccount(request):
     email = request.data.get("email",None)
     password = request.data.get("password", None)
+    confirm_key = request.data.get("confirm_key", None)
     token = request.data.get("token", None)
     
     print(email, password, token)
     #validate incoming email
     if email is None:
         return Response({"message": "Null Credentials"}, status = 404)
+    
+    if confirm_key is None:
+        return JsonResponse({"message" : "add the confirm_key as param to confirm account deletion"})
     
     #check if user want to use token and if token is missing use passowrd
     useToken = False
@@ -538,18 +526,18 @@ def otp(request):
            
             #but what kind of otp ? the query_params(requestHeading) handle that by knowing wether we send an email for password, email or username reset or none
             #check if user exist:
-            if User.objects.filter(email__iexact = requestEmail ).first() == None:
+            person = User.objects.filter(email__iexact = requestEmail ).first()
+            if person == None:
                     return JsonResponse({"message": "no user"}, status = 400)
+            elif person.is_staff is True:
+                return JsonResponse({"message" : "reset not allowed via here for special candidate, contact support"}, status = 400)
+            try:
+                otp = Utility().generate_random_text(min_lenght=6, max_lenght=6, number=True, uppercase=False, lowercase=False, symbols=False)
+                otp_unique_id = Utility().generate_random_text(min_lenght=100, max_lenght=100, number=True, uppercase=False, lowercase=False, symbols=False)
+                otp_sent_time = time.time()
+            except:
+                return JsonResponse({"message": "otp server down"})
             
-            numbers = "0123456789"
-            otp = ""
-            otp_unique_id = ""
-            for i in range(100):
-                otp_unique_id += str(random.choice(numbers))
-            for i in range(6):
-                otp +=str(random.choice(numbers))
-            otp_sent_time = time.time()
-
             #send mail
             requestHeading= request.query_params.get("heading" , "").upper()
             #use try cos if any error show, send the mail to me istead
@@ -744,14 +732,7 @@ def otp(request):
                 return JsonResponse({"message": "error 500"}, status =500)#This will usually happens if the os.get() in the settings is not getting the gmail password
 
             
-            
-        
-        
-        
-        
-        
-        
-        
+
 #Temprorary unused otp viewer
 @api_view(["GET"])
 def allOtp(request):
@@ -761,7 +742,13 @@ def allOtp(request):
         object.delete()
         return Response({"message" : "delete all success"})
     serializer = OtpSorageSerializer(object, many = True)
-    return Response(serializer.data)
+    from datetime import datetime as dt
+    try:
+        for i in serializer.data:
+            timestamp = dt.fromtimestamp(i["otp_sent_time"])
+            i.update({"otp_sent_time": timestamp.strftime("%d % %Y %H:%M:%S")})
+        return Response(serializer.data)
+    except Exception as e: return JsonResponse({"eror" : "backend error"}, status = 500)
 
 
 @api_view(["GET"])
@@ -782,24 +769,13 @@ def allAuth(request):
     except Exception as e:
         return Response([{"error": f"{e}"}, *serializer.data])
 
-
-
-
-
-
-
-
-
-
-
 #otp frontend 
 @api_view(["GET"])
 def frontendOtp(request):
     requestHeading= request.query_params.get("heading" , "").upper()
+    if len(requestHeading.strip()) < 1: return render(request, "api/request_incomplete/nopage.html")
+
     return render(request, "api/request_incomplete/otp_welcome.html", {"heading" : requestHeading})
-
-
-
 
 
 
@@ -1138,7 +1114,7 @@ def ai_response(request):
 
 
 
-
+#python endpoint that hanldes all the login 
 @api_view(['GET', "POST", "PATCH"])
 def login(request):
     email = request.data.get("email", None)
@@ -1150,15 +1126,17 @@ def login(request):
     if  request_auth_key != None and request_query_email2 != None:
         #verify the auth_key
         is_auth_key_authentic = AuthStorage.objects.filter(auth_key = request_auth_key, _user__email__iexact = request_query_email2).first()
-        
+        # print(is_auth_key_authentic._user.is_staff)
         if is_auth_key_authentic is None:
-            #pass so the user can be prompt to login again
+            #pass so the user can be prompt to login again 
             pass
+        elif  is_auth_key_authentic._user.is_staff is True:
+            #  i use the is staff to make sure an admin cant have a student accunt
+            return render(request,"api/request_incomplete/login_welcome.html", {"message" : "Admin can't Login to this dashaord."})
         else:
             #verify the auth_key have not expired
             if (time.time() - is_auth_key_authentic.expiration_time) < 1200 :
                 #have not expired, procees to login page
-                
                 userObject = User.objects.get(username = is_auth_key_authentic._user)
                 if userObject.last_login != None:
                     last_login = dt.datetime.fromisoformat(f"{userObject.last_login}")
@@ -1218,7 +1196,7 @@ def login(request):
 
 
 
-
+#For the app,i wil still find abetter way to do this
 @api_view(["GET", "POST"])
 def login_json(request):
     username = request.data.get("username", None)
@@ -1227,9 +1205,9 @@ def login_json(request):
     user_type = request.data.get("user_type", None)
     
     if email is None:
-        return JsonResponse({"message": "email required"})
+        return JsonResponse({"message": "email required"}, status = 404)
     if len(password) < 2:
-        return JsonResponse({"message": "password required"})
+        return JsonResponse({"message": "password required"}, status = 404)
     if user_type is None:
         return JsonResponse({"message" : "user_type required (new or old)"})
     if user_type == "new" or user_type == "old":
@@ -1485,7 +1463,7 @@ def all_active_users(request):
 
 
 
-
+####ADMIN
 
 #create token for admins
 @api_view(["GET", "POST"])
@@ -1513,14 +1491,27 @@ def adminTokenGenerator(request):
     else: return JsonResponse({"message": "invalid email or password"}, status = 409)
 
 
-#create admin account
+#logout admins
+@api_view(["GET", "POST"])
+def adminLogout(request):
+    email = request.data.get("email", None)
+    if email is None: return JsonResponse({"message" : "invalid email"}, status = 404)
+    #get all the tokens
+    AuthStorage.objects.filter(_user__email__iexact = email).delete()
+    return JsonResponse({"message" : "success"}, status = 200)
+
+
+#admin create account ui
 @api_view(["GET", "POST"])
 def createAdminAccount(request):
-    email = request.query_params.get("email", None)
-    password = request.query_params.get("password", None)
-    username = request.query_params.get("username", None)
-    
-    if email is None or password is None or username is None:
+    return render(request, "api/admin_create_account.html")
+
+#create admin account logic - theui come to interact with this
+@api_view(["GET", "POST"])
+def createAdminAccountLogic(request):
+    email = request.data.get("email", None)
+    password = request.data.get("password", None)
+    if email is None or password is None:
         return JsonResponse({"message": "invalid credentials"}, status = 404)
     
     #check if account exist and is a student istead of staff
@@ -1528,8 +1519,10 @@ def createAdminAccount(request):
     if account is not None:#user exist
         if account.is_staff == False: return JsonResponse({"message": "Student Account dectected , delete your account to be able to create an admin account; /deleteAccount/ to delete your account"}, status = 409)
         else: return JsonResponse({"message": "Account found with this email, login into your account at /admin"})
+
+    
     #create account
-    person = User.objects.create_user(username = username.upper(), email= email.upper(), password=password, is_staff = True)
+    person = User.objects.create_user(username = email.upper(), email= email.upper(), password=password, is_staff = True)
     serializer = UserSerializer(person, many = False)
     return JsonResponse({"message": "success", "extra" : serializer.data})
 
@@ -1555,9 +1548,9 @@ def admin(request):
         return  render(request,"api/admin_login.html")
     
     print(email, token)
-    #validate the email
-    person = User.objects.filter(email__iexact = email).first()
-    if person is None:
+    #validate the token
+    auth = AuthStorage.objects.filter(_user__email__iexact = email).first()
+    if auth is None:
         return  render(request,"api/admin_login.html")
     
     return render(request,"api/admin.html")
@@ -1577,7 +1570,10 @@ def batch_email(request):
         if person.is_staff() == False:
             return JsonResponse({"message": "only admin are allowed"}, status = 409)
         
-        #send the mail
+        #get all users
+        allStudent = User.objects.filter(is_staff = False).all()
+        tags= [i for i in allStudent]
+        print(tags)
         return JsonResponse({"message": "email sent placeholder"}, status = 200)
     
     return JsonResponse({"message" : "invalid credentials"}, 409)
@@ -1647,8 +1643,6 @@ API_DOC = {
 }
 
 
-
-
 class Utility:
     def __init__(self):
         pass
@@ -1662,7 +1656,7 @@ class Utility:
         
         auth_key_value = ""
         if min_lenght == max_lenght :
-            for i in range(max_lenght + 1):
+            for i in range(max_lenght):
                 auth_key_value += random.choice(all)
         else:
             for i in range(random.randint(min_lenght,max_lenght)):
