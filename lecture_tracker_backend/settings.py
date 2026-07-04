@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if os.getenv("local_db") is None:
     DEBUG =  False
 else:
-    DEBUG =  True
+    DEBUG =  False
 
 
 
@@ -58,6 +58,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",#for cors header
     "django.middleware.common.CommonMiddleware",#for cors header
+    "django.middleware.security.SecurityMiddleware", # diaplying static files
+    "whitenoise.middleware.WhiteNoiseMiddleware", # diaplying static files
 ]
 
 ROOT_URLCONF = 'lecture_tracker_backend.urls'
@@ -142,6 +144,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATIC_ROOT = BASE_DIR / 'staticfiles' #for whitenoise
 
 #Where i started writing custom data
 
