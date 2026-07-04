@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'api'
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -145,7 +145,7 @@ STATIC_URL = 'static/'
 
 #Where i started writing custom data
 
-ALLOWED_HOSTS = ["lecture-tracker-omega.vercel.app", "127.0.0.1", "esta-sensate-unquickly.ngrok-free.dev"]
+ALLOWED_HOSTS = [".vercel.app", "127.0.0.1", "esta-sensate-unquickly.ngrok-free.dev"]
 # CORS_ALLOW_ALL_ORIGINS = True
 
 #smtp usage
@@ -157,3 +157,16 @@ EMAIL_HOST_PASSWORD = os.getenv('GMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = 'lastissa11@gmail.com'
 EMAIL_PORT = 465
 
+
+#background task queue - redis as the chef and celery as the receipt collector
+CELERY_BROKER_URL = os.getenv("REDIS_URL")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+
+#redis cache system
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": CELERY_BROKER_URL,
+    }
+}

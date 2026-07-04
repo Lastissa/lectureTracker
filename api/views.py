@@ -1,18 +1,34 @@
 import random
 from django.shortcuts import render
-from rest_framework.decorators import api_view, APIView
-from rest_framework.response import Response
-from .serializers import *
-from .models import *
+from django.core.validators import validate_email
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-import datetime as dt
 from django.core.mail import send_mail
 from django.conf import settings
+from django.core.cache import cache
+
+from rest_framework.decorators import api_view, APIView
+from rest_framework.response import Response
+
+from api.serializers import *
+from api.models import *
+
+import datetime as dt
 import os
 
+from api.task import email_delegate
 
 
+
+@api_view(["GET"])
+def testing(request):
+    holder = cache.get("block_request")
+    email_delegate.delay()
+    if holder is None:
+        cache.set("block_request", str(time.time()), timeout=60)
+        return JsonResponse({"message" : "first timer"})
+    else:
+        return JsonResponse({"message" : f" non-first time , Please wait {60 - int(time.time() - float(holder))} seconds"})
 
 #To get one data from the db
 @api_view(['GET', "POST"])
@@ -24,7 +40,7 @@ def viewData(request):
     
     specialAccessForAuthKey = False; #for auth key so as to skip password checking
     #check if the email in the param exist
-    if requestEmail == "DEFAULT":return JsonResponse({"message":"user not found", "hint": "add email to the query param"})
+    if validate_email(requestEmail) == False:return JsonResponse({"message":"user not found", "hint": "add email to the query param"})
   #Get the email if exist  
     userObjects = User.objects.filter(email__iexact = requestEmail).first()
     if userObjects is not None:
@@ -106,7 +122,7 @@ def frontendViewData(request):
     requestEmail = request.query_params.get('email', 'empty').strip().upper()
     requestPassword = request.query_params.get('password', 'empty').strip()
     if requestEmail == "empty" or requestPassword == "empty":
-        return render(request, "api/request_incomplete/viewData_welcome.html" )
+        return render(request, "api/html_files/viewData_welcome.html" )
     #mean user have typed correctly clicked email
     else:
         #Check if user exist
@@ -118,7 +134,7 @@ def frontendViewData(request):
             if userObjects.check_password(requestPassword):
                 #Check if the is_active is False
                 if userObjects.is_active == False:
-                    return render(request, "api/request_incomplete/viewData_account_deactivated.html")
+                    return render(request, "api/html_files/viewData_account_deactivated.html")
                 #correct password
                 #return user data 
                 historyObjects = History.objects.get(_user = userObjects)
@@ -145,7 +161,7 @@ def frontendViewData(request):
                 #add back the formatted data
                 userPersonal.update({"last_login" : last_login, "date_joined" : date_joined})
             
-                return render(request, "api/request_incomplete/viewData_success.html", {
+                return render(request, "api/html_files/viewData_success.html", {
                     'user': userPersonal,
                     'history': historySerializer.data,
                     'currentData': currentDataSerializer.data
@@ -154,11 +170,11 @@ def frontendViewData(request):
                 
             else:
                 #wrong password
-                return render(request, "api/request_incomplete/viewData_wrong_password.html")
+                return render(request, "api/html_files/viewData_wrong_password.html")
         
         else:
             #user does not exist
-            return  render(request, "api/request_incomplete/viewData_no_user.html")
+            return  render(request, "api/html_files/viewData_no_user.html")
         
         
 
@@ -172,8 +188,6 @@ def backupData(request):
     requestCurrentData = request.data.get('currentData',[] )
     auth_key = request.data.get("auth_key", None)
     result = None
-    
-    #I cant proof check 
     
     
     #Check if user already exists, if so, update the data, if not, create a new, currentData and history object
@@ -234,8 +248,13 @@ def backupData(request):
         #check if the username is empty or missing
         if len(requestUserName.strip() )< 1:
             return Response({"message" : "username or email required"}, status=400)
-        elif "@GMAIL.COM" not in requestEmail.upper():
+        elif validate_email(requestEmail) is False:
             return Response({"message" : "email invalid"}, status=400)
+        #check if username already exist before
+        try:
+            username_exist = User.objects.filter(username = requestUserName.upper()).first()
+            if username_exist:return JsonResponse({"message" : "Username already taken"} , status = 409)
+        except:pass
         #Create a new user, currentData and a new history object
         #Check if password is empty
         if len(requestPassword) < 2:
@@ -258,12 +277,9 @@ def backupData(request):
 
 
 
-
-
-
 @api_view(["GET"])
 def frontendbackupData(request):
-    return render(request, "api/request_incomplete/nopage.html")#This is a placeholder for the frontend aspect of the backupData, which is not yet implemented, but I want to have the endpoint ready for when I want to implement it in the future.
+    return render(request, "api/html_files/signup.html")#This is a placeholder for the frontend aspect of the backupData, which is not yet implemented, but I want to have the endpoint ready for when I want to implement it in the future.
 
 
 
@@ -302,7 +318,7 @@ def frontendViewAllData(request):
     
     
     
-    return render(request, "api/request_incomplete/viewAllData_welcome.html", {'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'users': userSerializer.data})
+    return render(request, "api/html_files/viewAllData_welcome.html", {'history': historySerializer.data, 'currentData': currentDataSerializer.data, 'users': userSerializer.data})
 
 
 
@@ -543,6 +559,7 @@ def otp(request):
             requestHeading= request.query_params.get("heading" , "").upper()
             #use try cos if any error show, send the mail to me istead
             try:
+                start_time = time.time()
                 #mail for resettingusername only
                 if requestHeading == "USERNAME RESET":
                     domain = request.build_absolute_uri('/')
@@ -723,7 +740,8 @@ def otp(request):
                     #bckup to the otpStorage
                 otpObject = OtpSorage.objects.create(email = requestEmail, otp = otp, otp_sent_time = otp_sent_time, otp_unique_id = otp_unique_id)
                 r = OtpSorageSerializer(otpObject, many = False)
-
+                
+                print(f"{int(time.time() - start_time)} seconds")
                 return JsonResponse({"message": "success"}, status = 200)
             except Exception as e:
                 # This prints to the Vercel 'Logs' tab during startup
@@ -774,9 +792,9 @@ def allAuth(request):
 @api_view(["GET"])
 def frontendOtp(request):
     requestHeading= request.query_params.get("heading" , "").upper()
-    if len(requestHeading.strip()) < 1: return render(request, "api/request_incomplete/nopage.html")
+    if len(requestHeading.strip()) < 1: return render(request, "api/html_files/nopage.html")
 
-    return render(request, "api/request_incomplete/otp_welcome.html", {"heading" : requestHeading})
+    return render(request, "api/html_files/otp_welcome.html", {"heading" : requestHeading})
 
 
 
@@ -869,14 +887,14 @@ def  frontendUpdatePassword(request):
     
     #if any data missing, return a page not allowed UI 
     if requestEmail == "EMPTY" or len(otp) < 2 or otp_sent_time == 0 or len(otp_unique_id) < 2 :
-        return render(request, "api/request_incomplete/updatePassword_acces_not_allowed.html")
+        return render(request, "api/html_files/updatePassword_acces_not_allowed.html")
     #do a quick validity check with the otp_sent_time and see of the otp never expire, it it has, return "link expired" 
     else:
       if (time.time() - int(otp_sent_time)) > 600:
-          return render(request, "api/request_incomplete/updatePassword_link_expired.html")
+          return render(request, "api/html_files/updatePassword_link_expired.html")
       
     #if no data is missing and the otp still valid, return a html where the user input the otp and new password and valodate it against db
-    return render(request,"api/request_incomplete/updatePassword_last_step.html")
+    return render(request,"api/html_files/updatePassword_last_step.html")
 
 
 
@@ -1015,7 +1033,7 @@ def api_inspector(request):
             "doc": API_DOC.get(key)
         })
 
-    return render(request, "api/request_incomplete/api_inspector.html", {
+    return render(request, "api/html_files/api_inspector.html", {
         "endpoints": endpoint_data
     })
 
@@ -1133,7 +1151,7 @@ def login(request):
             pass
         elif  is_auth_key_authentic._user.is_staff is True:
             #  i use the is staff to make sure an admin cant have a student accunt
-            return render(request,"api/request_incomplete/login_welcome.html", {"message" : "Admin can't Login to this dashaord."})
+            return render(request,"api/html_files/login_welcome.html", {"message" : "Admin can't Login to this dashaord."})
         else:
             #verify the auth_key have not expired
             if (time.time() - is_auth_key_authentic.expiration_time) < 1200 :
@@ -1147,7 +1165,7 @@ def login(request):
                 date_joined = dt.datetime.fromisoformat(f"{userObject.date_joined}")
                 date_joined = date_joined.strftime("%d %B,%Y %H:%M")
                 #login dashbpard
-                return render(request, "api/request_incomplete/login_dashboard.html", {
+                return render(request, "api/html_files/login_dashboard.html", {
                 "username" : f"{is_auth_key_authentic._user}",
                 "email" : request_query_email2,
                 "date_joined": f"{date_joined}",
@@ -1159,11 +1177,11 @@ def login(request):
                 )
             else:
                 #auth_key expired
-                return render(request, "api/request_incomplete/login_welcome.html", {"message" : f"token expired {int(time.time() - is_auth_key_authentic.expiration_time  - 1200)} sec ago"})
+                return render(request, "api/html_files/login_welcome.html", {"message" : f"token expired {int(time.time() - is_auth_key_authentic.expiration_time  - 1200)} sec ago"})
     
     
     if email == None and request_query_email2 == None:
-        return render(request,"api/request_incomplete/login_welcome.html", {"message2" : f""})
+        return render(request,"api/html_files/login_welcome.html", {"message2" : f""})
     else:
         #Validate email in the db
         person = User.objects.filter(email__iexact = email).first()
@@ -1185,13 +1203,13 @@ def login(request):
                 userserializer = UserSerializer(person, data = {"last_login" : dt.datetime.now()}, partial = True)
                 if userserializer.is_valid():
                     userserializer.save()
-                return render(request,"api/request_incomplete/login_welcome.html", {"message" : "user found",  "auth_key" : auth_key_value})
+                return render(request,"api/html_files/login_welcome.html", {"message" : "user found",  "auth_key" : auth_key_value})
                 pass
             #wrong password
-            return render(request,"api/request_incomplete/login_welcome.html", {"message" : "Incorrect Password"})
+            return render(request,"api/html_files/login_welcome.html", {"message" : "Incorrect Password"})
         else:
             #no user found 
-            return render(request,"api/request_incomplete/login_welcome.html", {"message" : "No User Found"})
+            return render(request,"api/html_files/login_welcome.html", {"message" : "No User Found"})
 
 
 
@@ -1269,13 +1287,13 @@ def login_json(request):
 def cleartoken(request):
     email = request.query_params.get("email", None)
     if email is None:
-        return render(request, "api/request_incomplete/login_welcome.html", {"message": "token invalidated"})
+        return render(request, "api/html_files/login_welcome.html", {"message": "token invalidated"})
     else:
         try:
             AuthStorage.objects.get(_user__email__iexact = email).delete()
         except Exception as e:
             print(f"{e}")
-        return render(request, "api/request_incomplete/login_welcome.html")
+        return render(request, "api/html_files/login_welcome.html")
 
 
 
@@ -1443,7 +1461,7 @@ def allTimeBackUpHistory(request):
 #This is for the homepage
 @api_view(['GET'])
 def home(request):
-    return render(request, 'api/homehtml.html', {"total_user" : 2, "active_users" : 3})
+    return render(request, 'api/landing_page.html')
 
 #for getting all user in the system
 @api_view(["GET"])
@@ -1505,7 +1523,7 @@ def adminLogout(request):
 #admin create account ui
 @api_view(["GET", "POST"])
 def createAdminAccount(request):
-    return render(request, "api/admin_create_account.html")
+    return render(request, "api/admin/create_account.html")
 
 #create admin account logic - theui come to interact with this
 @api_view(["GET", "POST"])
@@ -1546,13 +1564,14 @@ def admin(request):
     token = request.query_params.get("session_id", None)
 
     if token is None or email is None:
-        return  render(request,"api/admin_login.html")
+        return  render(request,"api/admin/login.html")
     
     print(email, token)
     #validate the token
     auth = AuthStorage.objects.filter(_user__email__iexact = email).first()
     if auth is None:
-        return  render(request,"api/admin_login.html")
+        return  render(request,"api/admin/dashboard.html")
+    
     
     return render(request,"api/admin.html")
 

@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <!-- ===== CHARACTER SET & VIEWPORT ===== -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <!-- ===== PRIMARY SEO ===== -->
+  <title>Lecture Tracker — Stay Disciplined, Never Miss a Lecture</title>
+  <meta name="description" content="Lecture Tracker helps students stay disciplined with lectures, track attendance, manage schedules, set reminders, and improve academic performance.">
+  <link rel="canonical" href="https://lecture-tracker-omega.vercel.app/">
+
+  <!-- ===== ROBOTS ===== -->
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="robots" content="noarchive">
+
+  <!-- ===== OPEN GRAPH (WhatsApp, Facebook, etc.) ===== -->
+  <meta property="og:title" content="Lecture Tracker — Stay Disciplined, Never Miss a Lecture">
+  <meta property="og:description" content="Track it, Attend it. Build structural classroom habits that stick. Track attendance, link tasks, and analyze performance trends effortlessly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://lecture-tracker-omega.vercel.app/">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=630&fit=crop&crop=center">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Lecture Tracker">
+  <meta property="og:locale" content="en_US">
+
+  <!-- ===== TWITTER CARD ===== -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Lecture Tracker — Stay Disciplined, Never Miss a Lecture">
+  <meta name="twitter:description" content="Track it, Attend it. Build structural classroom habits that stick. Track attendance, link tasks, and analyze performance trends effortlessly.">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=630&fit=crop&crop=center">
+  <meta name="twitter:site" content="@LectureTracker">
+
+  <!-- ===== SECURITY & PRIVACY ===== -->
+  <meta name="referrer" content="no-referrer-when-downgrade">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- ===== BROWSER THEME COLOR ===== -->
+  <meta name="theme-color" content="#060B16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f4ee" media="(prefers-color-scheme: light)">
+
+  <!-- ===== FONTS ===== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- ===== EXTERNAL STYLESHEET ===== -->
+  <link rel="stylesheet" href="{% static 'css/landing_page.css' %}">
+</head>
+<body>
+  <!-- ===== BACKGROUND ===== -->
+  <div class="bg-fixed" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow-a"></div>
+    <div class="bg-glow-b"></div>
+  </div>
+
+  <!-- ===== HEADER / NAV ===== -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="logo" aria-label="LectureTracker home">
+        <span class="logo-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+        </span>
+        LectureTracker
+      </a>
+
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+        <a href="/login/" class="btn btn-secondary">Sign In</a>
+        <a href="/signup/" class="btn btn-primary">Create Free Account</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <main>
+      <!-- ===== HERO ===== -->
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="badge"><span class="dot"></span> Engineered for Academic Discipline</div>
+          <h1>Consistency<br>over <span class="underline-accent">Intensity<svg viewBox="0 0 340 20" preserveAspectRatio="none"><path d="M3 14 Q 85 4, 170 11 T 337 9"/></svg></span>.</h1>
+          <p class="subtitle">Build structural classroom habits that stick. Track your attendance, link tasks, and analyze your performance trends effortlessly.</p>
+
+          <div class="hero-cta-row">
+            <a href="/backupData/" class="btn btn-primary btn-large">Get Started Free</a>
+            <a href="/login/" class="btn btn-secondary btn-large">Sign In</a>
+          </div>
+
+          <div class="hero-proof">
+            <div class="avatar-stack">
+              <span>AO</span><span>TJ</span><span>FB</span><span>+</span>
+            </div>
+            <div class="hero-proof-text"><strong>2,400+</strong> students tracking smarter this term</div>
+          </div>
+        </div>
+
+        <!-- ===== LIVE DEMO WIDGET ===== -->
+        <div class="demo-wrap">
+          <div class="demo-floating-chip">Above 75% — safe ✓</div>
+          <div class="demo-card">
+            <div class="demo-head">
+              <span class="demo-head-title">Your Attendance</span>
+              <span class="demo-live-chip"><span class="dot"></span> Live</span>
+            </div>
+            <div class="demo-body">
+              <div class="ring-wrap">
+                <svg viewBox="0 0 132 132">
+                  <circle class="ring-track" cx="66" cy="66" r="56" fill="none" stroke-width="11"></circle>
+                  <circle id="progressRing" class="ring-progress" cx="66" cy="66" r="56" fill="none" stroke-width="11"
+                    stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+                </svg>
+                <div class="ring-center">
+                  <span class="ring-pct" id="ringPct">0%</span>
+                  <span class="ring-label">PRESENT</span>
+                </div>
+              </div>
+              <div class="demo-stats">
+                <div class="demo-stat-row">
+                  <span class="demo-stat-label">CSC 304 — Algorithms</span>
+                  <span class="demo-stat-value up">92%</span>
+                </div>
+                <div class="demo-stat-row">
+                  <span class="demo-stat-label">Current streak</span>
+                  <span class="demo-stat-value">🔥 9 lectures</span>
+                </div>
+                <div class="demo-bars" id="demoBars">
+                  <i class="present" style="height:60%; animation-delay:.1s"></i>
+                  <i class="present" style="height:85%; animation-delay:.18s"></i>
+                  <i style="height:30%; animation-delay:.26s"></i>
+                  <i class="present" style="height:95%; animation-delay:.34s"></i>
+                  <i class="present" style="height:70%; animation-delay:.42s"></i>
+                  <i class="present" style="height:100%; animation-delay:.5s"></i>
+                  <i class="present" style="height:80%; animation-delay:.58s"></i>
+                </div>
+              </div>
+            </div>
+            <div class="demo-footer-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+              Updates the instant you check in — no manual math.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TRUST STRIP ===== -->
+      <div class="trust-strip">
+        <span>Faculty of Engineering</span>
+        <span>Computer Science Dept.</span>
+        <span>Business School</span>
+        <span>Medical Sciences</span>
+      </div>
+
+      <!-- ===== STATS BAND ===== -->
+      <section class="stats-band">
+        <div class="stat-block">
+          <div class="num" data-count="2400" data-suffix="+">0</div>
+          <div class="lbl">Active students</div>
+        </div>
+        <div class="stat-block">
+          <div class="num" data-count="98" data-suffix="%">0</div>
+          <div class="lbl">Attendance accuracy</div>
+        </div>
+        <div class="stat-block">
+          <div class="num" data-count="40" data-suffix="K+">0</div>
+          <div class="lbl">Lectures logged</div>
+        </div>
+        <div class="stat-block">
+          <div class="num" data-count="15" data-suffix="min">0</div>
+          <div class="lbl">Earlier reminder window</div>
+        </div>
+      </section>
+
+      <!-- ===== OVERVIEW / FEATURES ===== -->
+      <section class="overview-layout">
+        <div class="sticky-manifesto">
+          <div class="section-eyebrow">Why LectureTracker</div>
+          <h2>Take control of your academic matrix.</h2>
+          <p>LectureTracker is built for students who are tired of dropping percentages, tracking timelines on chaotic group chats, and missing core updates.</p>
+          <p>No artificial clutter, no feature bloat. Just direct, actionable telemetry regarding your academic attendance and schedule commitments.</p>
+        </div>
+
+        <div class="bento-grid">
+          <div class="bento-card card-span-2">
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3>Smart Attendance Tracking</h3>
+            <p>Log your entry instantly. Calculate live attendance metrics dynamically for each stream, ensuring you stay safely above institutional strict requirements.</p>
+          </div>
+
+          <div class="bento-card blue">
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <h3>Automated Triggers</h3>
+            <p>Receive localized pings 15 minutes ahead of schedule. Fully native pipelines ready on <a href="#">Play Store</a> and <a href="#">App Store</a>.</p>
+          </div>
+
+          <div class="bento-card">
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </div>
+            <h3>Discipline Analytics</h3>
+            <p>Examine trends using clear, structured data profiles. Isolate patterns that block your consistency before exams creep up.</p>
+          </div>
+
+          <div class="bento-card card-span-2 blue">
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </div>
+            <h3>Assignment Integration</h3>
+            <p>Contextually map tasks directly into lecture contexts. Know precisely what material covers which upcoming project submission.</p>
+          </div>
+
+          <div class="bento-card card-span-2">
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3>Study Group Co-ordination</h3>
+            <p>Sync cross-profile availabilities with teammates seamlessly. Extract real-time intersections without messy coordination threads.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TESTIMONIAL ===== -->
+      <section class="quote-section">
+        <div class="quote-mark">&ldquo;</div>
+        <blockquote>I went from guessing my attendance percentage to knowing it the second I sit down. Caught a failing module two weeks before it would've been too late.</blockquote>
+        <div class="quote-author">
+          <span class="qa-avatar">FB</span>
+          <span><strong>Fatima B.</strong> — 300L, Computer Science</span>
+        </div>
+      </section>
+
+      <!-- ===== FINAL CTA ===== -->
+      <section class="final-cta">
+        <h2>Stop guessing your percentages.</h2>
+        <p>Set up your timetable in under three minutes. Free for every student.</p>
+        <div class="btn-group">
+          <a href="/backupData/" class="btn btn-primary btn-large">Get Started Free</a>
+          <a href="/login/" class="btn btn-secondary btn-large">I already have an account</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="bottom-credit">
+      &copy; 2026 LectureTracker. Built for high-performance students.
+    </footer>
+  </div>
+
+  <!-- ===== FLOATING ACTION BAR ===== -->
+  <div class="action-bar" id="ctaSection">
+    <span>Ready to take control?</span>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="window.location.href = window.location.origin + '/login/'">Login</button>
+      <button class="btn btn-primary" onclick="window.location.href = window.location.origin + '/backupData/'">Join Free</button>
+    </div>
+  </div>
+
+  <!-- ===== ROBOT CUSTOMER CARE LAUNCHER ===== -->
+  <div class="bot-launcher">
+    <div class="bot-speech" id="botSpeech">Need help? Tap me 👋</div>
+    <button class="bot-btn" id="botBtn" aria-label="Chat with customer care on WhatsApp">
+      <span class="online-dot"></span>
+      <svg class="bot-svg" viewBox="0 0 60 60" fill="none">
+        <line x1="30" y1="8" x2="30" y2="2" stroke="#1a1206" stroke-width="2.5" stroke-linecap="round"/>
+        <circle class="bot-antenna-dot" cx="30" cy="2" r="3" fill="#1a1206"/>
+        <g class="bot-arm-left">
+          <line x1="14" y1="34" x2="6" y2="26" stroke="#1a1206" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="6" cy="26" r="3.2" fill="#1a1206"/>
+        </g>
+        <line x1="46" y1="34" x2="54" y2="38" stroke="#1a1206" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="54" cy="38" r="3.2" fill="#1a1206"/>
+        <rect x="13" y="10" width="34" height="28" rx="11" fill="#1a1206"/>
+        <rect x="17" y="14" width="26" height="20" rx="8" fill="#ffc14d"/>
+        <rect class="bot-eye-l" x="22" y="21" width="6" height="7" rx="3" fill="#1a1206"/>
+        <rect class="bot-eye-r" x="32" y="21" width="6" height="7" rx="3" fill="#1a1206"/>
+        <path d="M24 30 Q30 35 36 30" stroke="#1a1206" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <rect x="18" y="36" width="24" height="18" rx="8" fill="#1a1206"/>
+        <rect x="22" y="40" width="16" height="10" rx="4" fill="#ffc14d"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ===== EXTERNAL JAVASCRIPT ===== -->
+  <script src="{% static 'js/landing_page.js' %}" defer></script>
+</body>
+</html>

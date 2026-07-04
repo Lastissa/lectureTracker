@@ -8,7 +8,7 @@ urlpatterns = [
     path('viewData/', views.frontendViewData),
     path('viewData/json/', views.viewData),
 
-    path('backupData/', views.frontendbackupData),
+    path('signup/', views.frontendbackupData),
     path('backupData/json/', views.backupData),
 
     path('deactivateAccount/', views.deactivateAccount),
@@ -70,5 +70,8 @@ urlpatterns = [
      path("admin/logout/", views.adminLogout),
      path("createAdminAccount/", views.createAdminAccount),
      path("createAdminAccountLogic/", views.createAdminAccountLogic),
-     path("adminTokenGenerator/", views.adminTokenGenerator)
+     path("adminTokenGenerator/", views.adminTokenGenerator),
+     
+     #test
+     path("test/", views.testing)
 ]

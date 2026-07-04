@@ -1,0 +1,154 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <!-- ===== CHARACTER SET & VIEWPORT ===== -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <!-- ===== PRIMARY SEO ===== -->
+  <title>Create Your Account — Lecture Tracker</title>
+  <meta name="description" content="Create your free Lecture Tracker account and start building attendance discipline in under a minute.">
+  <link rel="canonical" href="https://lecture-tracker-omega.vercel.app/signup/">
+  <meta name="robots" content="noindex, follow">
+
+  <!-- ===== BROWSER THEME COLOR ===== -->
+  <meta name="theme-color" content="#060B16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f4ee" media="(prefers-color-scheme: light)">
+
+  <!-- ===== FONTS ===== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- ===== EXTERNAL STYLESHEET ===== -->
+  <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+</head>
+<body>
+  <!-- ===== BACKGROUND ===== -->
+  <div class="bg-fixed" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow-a"></div>
+    <div class="bg-glow-b"></div>
+  </div>
+
+  <!-- ===== TOAST REGION (live, for screen readers) ===== -->
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ===== HEADER / NAV ===== -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="logo" aria-label="LectureTracker home">
+        <span class="logo-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+        </span>
+        LectureTracker
+      </a>
+      <div class="nav-actions">
+        <span class="nav-hint">Already tracking?</span>
+        <a href="/login/" class="btn btn-secondary">Sign In</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <main class="auth-shell">
+
+      <!-- ===== LEFT PANEL — SIGNATURE SETUP RING ===== -->
+      <section class="auth-brand" aria-hidden="true">
+        <div class="badge"><span class="dot"></span> Free forever, no card needed</div>
+        <h1>Build the habit<br>before the habit<br>builds <span class="underline-accent">you<svg viewBox="0 0 160 20" preserveAspectRatio="none"><path d="M3 14 Q 40 4, 80 11 T 157 9"/></svg></span>.</h1>
+        <p class="auth-brand-copy">Three details and you're in. Your attendance ring starts filling the moment you check in for your first lecture.</p>
+
+        <div class="setup-card">
+          <div class="setup-head">
+            <span class="setup-head-title">Profile Setup</span>
+            <span class="setup-live-chip"><span class="dot"></span> <span id="setupPctLabel">0%</span> ready</span>
+          </div>
+          <div class="setup-body">
+            <div class="ring-wrap">
+              <svg viewBox="0 0 132 132">
+                <circle class="ring-track" cx="66" cy="66" r="56" fill="none" stroke-width="11"></circle>
+                <circle id="setupRing" class="ring-progress" cx="66" cy="66" r="56" fill="none" stroke-width="11"
+                  stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+              </svg>
+              <div class="ring-center">
+                <span class="ring-pct" id="ringPct">0%</span>
+                <span class="ring-label">SET UP</span>
+              </div>
+            </div>
+            <ul class="setup-checklist" id="setupChecklist">
+              <li data-field="username"><span class="check-dot"></span> Pick a username</li>
+              <li data-field="email"><span class="check-dot"></span> Add a Gmail address</li>
+              <li data-field="password"><span class="check-dot"></span> Set a password</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== RIGHT PANEL — FORM ===== -->
+      <section class="auth-form-wrap">
+        <div class="auth-form-card">
+          <div class="section-eyebrow">Create account</div>
+          <h2 class="form-title">Let's get you set up</h2>
+          <p class="form-subtitle">Takes less than a minute. You can start tracking lectures right after.</p>
+
+          <form id="signupForm" novalidate autocomplete="off">
+            <div class="field-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" name="username" placeholder="e.g. ada_lovelace" autocomplete="username" maxlength="150" required>
+              <span class="field-error" id="usernameError" role="alert"></span>
+            </div>
+
+            <div class="field-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="you@gmail.com" autocomplete="email" required>
+              <span class="field-hint">Must be a Gmail address for now.</span>
+              <span class="field-error" id="emailError" role="alert"></span>
+            </div>
+
+            <div class="field-group">
+              <label for="password">Password</label>
+              <div class="password-field">
+                <input type="password" id="password" name="password" placeholder="At least 6 characters" autocomplete="new-password" required>
+                <button type="button" class="toggle-visibility" id="togglePassword" aria-label="Show password">
+                  <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a21.6 21.6 0 0 1-2.61 3.71M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+                </button>
+              </div>
+              <div class="strength-meter" id="strengthMeter">
+                <div class="strength-bar"><span id="strengthFill"></span></div>
+                <span class="strength-label" id="strengthLabel">&nbsp;</span>
+              </div>
+              <span class="field-error" id="passwordError" role="alert"></span>
+            </div>
+
+            <div class="field-group">
+              <label for="confirmPassword">Confirm password</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Type it again" autocomplete="new-password" required>
+              <span class="field-error" id="confirmPasswordError" role="alert"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large btn-submit" id="submitBtn">
+              <span class="btn-label">Create Free Account</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+
+            <p class="form-footnote">Already have an account? <a href="/login/">Sign in instead</a></p>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="bottom-credit">
+      &copy; 2026 LectureTracker. Built for high-performance students.
+    </footer>
+  </div>
+
+  <!-- ===== EXTERNAL JAVASCRIPT ===== -->
+  <script src="{% static 'js/signup.js' %}" defer></script>
+</body>
+</html>
