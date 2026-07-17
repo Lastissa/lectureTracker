@@ -1,0 +1,700 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <!-- ===== CHARACTER SET & VIEWPORT ===== -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <!-- ===== PRIMARY SEO ===== -->
+  <title>Lecture Tracker — Stay Disciplined, Never Miss a Lecture</title>
+  <meta name="description" content="Lecture Tracker helps students stay disciplined with lectures, track attendance, manage schedules, set reminders, and improve academic performance.">
+  <link rel="canonical" href="https://lecture-tracker-omega.vercel.app/">
+
+  <!-- ===== ROBOTS ===== -->
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="robots" content="noarchive">
+
+  <!-- ===== OPEN GRAPH (WhatsApp, Facebook, etc.) ===== -->
+  <meta property="og:title" content="Lecture Tracker — Stay Disciplined, Never Miss a Lecture">
+  <meta property="og:description" content="Track it, Attend it. Build structural classroom habits that stick. Track attendance, link tasks, and analyze performance trends effortlessly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://lecture-tracker-omega.vercel.app/">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=630&fit=crop&crop=center">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Lecture Tracker">
+  <meta property="og:locale" content="en_US">
+
+  <!-- ===== TWITTER CARD ===== -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Lecture Tracker — Stay Disciplined, Never Miss a Lecture">
+  <meta name="twitter:description" content="Track it, Attend it. Build structural classroom habits that stick. Track attendance, link tasks, and analyze performance trends effortlessly.">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=630&fit=crop&crop=center">
+  <meta name="twitter:site" content="@LectureTracker">
+
+  <!-- ===== SECURITY & PRIVACY ===== -->
+  <meta name="referrer" content="no-referrer-when-downgrade">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- ===== BROWSER THEME COLOR ===== -->
+  <meta name="theme-color" content="#060B16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f4ee" media="(prefers-color-scheme: light)">
+
+  <!-- ===== FONTS =====
+       Perf note: fonts are now loaded with the "preload + swap on load" pattern instead of a
+       blocking <link rel="stylesheet">. The page renders with the fallback system font
+       immediately, then swaps to the webfont once it's ready — this alone removes one of the
+       biggest render-blocking requests on first load. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap">
+  </noscript>
+
+  <!-- ===== EXTERNAL STYLESHEET ===== -->
+  <link rel="stylesheet" href="{% static 'css/landing_page.css' %}">
+
+  <!-- ===== CRITICAL INLINE CSS (intro / preloader / scroll-reveal / mobile refactor) =====
+       Kept inline (not in landing_page.css) on purpose: this is the styling needed for the
+       very first paint (the preloader), so it must be available before any external
+       stylesheet round-trip finishes. Everything else stays deferred / lazy.
+
+       NOTE ON THIS PASS: landing_page.css lives outside this file and wasn't provided, so the
+       mobile-responsiveness + motion rules below are written here, scoped tightly to existing
+       class names, and loaded AFTER the external stylesheet in document order — meaning they
+       win on conflicts without needing !important. If you'd rather these live permanently in
+       landing_page.css, this whole block can be cut-pasted there verbatim. -->
+  <style>
+    /* ---------- Intro / preloader ---------- */
+    #preloader{
+      position:fixed; inset:0; z-index:9999;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:18px;
+      background:#060B16; color:#f6f4ee;
+      transition:opacity .6s ease, visibility .6s ease;
+    }
+    #preloader .preloader-mark{
+      width:52px; height:52px; color:#ffc14d;
+      animation:lt-float 1.6s ease-in-out infinite;
+    }
+    #preloader .preloader-mark path{
+      stroke-dasharray:60; stroke-dashoffset:60;
+      animation:lt-draw 1.1s ease forwards;
+    }
+    #preloader .preloader-bar{
+      width:160px; height:3px; border-radius:99px; background:rgba(246,244,238,.15); overflow:hidden;
+    }
+    #preloader .preloader-bar-fill{
+      width:0%; height:100%; background:#ffc14d; border-radius:99px;
+      animation:lt-bar 1.4s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    #preloader .preloader-label{
+      font-family:'Space Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.14em;
+      text-transform:uppercase; opacity:.6;
+    }
+    #preloader.preloader-done{ opacity:0; visibility:hidden; pointer-events:none; }
+
+    @keyframes lt-draw{ to{ stroke-dashoffset:0; } }
+    @keyframes lt-bar{ to{ width:100%; } }
+    @keyframes lt-float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+
+    /* First-load motion for the hero — staggered entrance once the preloader clears */
+    body:not(.page-revealed) [data-hero-in]{ opacity:0; transform:translateY(18px); }
+    body.page-revealed [data-hero-in]{
+      opacity:1; transform:translateY(0);
+      transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+      transition-delay:calc(var(--d, 0) * 90ms);
+    }
+
+    /* Scroll-reveal for everything below the fold */
+    [data-animate]{
+      opacity:0; transform:translateY(24px);
+      transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+      transition-delay:calc(var(--d, 0) * 80ms);
+      will-change:opacity, transform;
+    }
+    [data-animate].in-view{ opacity:1; transform:translateY(0); }
+    [data-animate="zoom-in"]{ transform:scale(.94); }
+    [data-animate="zoom-in"].in-view{ transform:scale(1); }
+
+    .bot-speech-visible{ opacity:1 !important; transform:translateY(0) !important; }
+
+    /* ---------- Ambient background motion (desktop + mobile, GPU-only transforms) ---------- */
+    .bg-glow-a, .bg-glow-b{
+      animation:lt-drift 14s ease-in-out infinite alternate;
+      will-change:transform;
+    }
+    .bg-glow-b{ animation-duration:18s; animation-direction:alternate-reverse; }
+    @keyframes lt-drift{
+      from{ transform:translate3d(0,0,0) scale(1); }
+      to{ transform:translate3d(3%, -4%, 0) scale(1.08); }
+    }
+
+    /* ---------- Interactive tilt targets (JS toggles data-tilt-active) ---------- */
+    .demo-card, .bento-card{
+      transform-style:preserve-3d;
+      transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease;
+    }
+    .bento-card:active{ transform:scale(.98); }
+
+    /* ---------- Tap ripple (touch + click, all pointer types) ---------- */
+    .btn, .bento-card, .demo-card, .bot-btn{ position:relative; overflow:hidden; }
+    .lt-ripple{
+      position:absolute; border-radius:50%; pointer-events:none;
+      background:currentColor; opacity:.28;
+      transform:scale(0); animation:lt-ripple-anim .6s ease-out forwards;
+    }
+    @keyframes lt-ripple-anim{ to{ transform:scale(2.6); opacity:0; } }
+
+    /* ---------- Icon micro-motion ---------- */
+    .bento-icon{ transition:transform .3s cubic-bezier(.2,.7,.2,1); }
+    .bento-card:hover .bento-icon, .bento-card:active .bento-icon{ transform:translateY(-3px) rotate(-4deg); }
+
+    .avatar-stack span{ transition:transform .25s ease; }
+    .avatar-stack:hover span, .avatar-stack:active span{ transform:translateY(-3px); }
+
+    @media (prefers-reduced-motion: reduce){
+      #preloader, #preloader *, [data-hero-in], [data-animate],
+      .bg-glow-a, .bg-glow-b, .bento-icon, .avatar-stack span,
+      .demo-card, .bento-card{
+        animation-duration:.01ms !important; transition-duration:.01ms !important;
+      }
+      [data-hero-in], [data-animate]{ opacity:1 !important; transform:none !important; }
+    }
+
+    /* =========================================================================
+       MOBILE RESPONSIVENESS PASS
+       Written mobile-first for the pieces most likely to break on a phone,
+       layered as override breakpoints on top of the existing desktop CSS.
+       ========================================================================= */
+
+    /* Base: keep tap targets comfortable everywhere, no horizontal overflow ever */
+    html{ -webkit-text-size-adjust:100%; }
+    body{ overflow-x:hidden; }
+    img, svg{ max-width:100%; height:auto; }
+    .btn{ min-height:44px; touch-action:manipulation; }
+
+    /* ----- Tablet & below (≤900px) ----- */
+    @media (max-width:900px){
+      .hero{
+        display:flex; flex-direction:column;
+        gap:32px;
+      }
+      .hero-copy{ order:1; text-align:left; }
+      .demo-wrap{ order:2; width:100%; }
+      .demo-card{ max-width:420px; margin:0 auto; }
+
+      .overview-layout{ display:block; }
+      .sticky-manifesto{ position:static; margin-bottom:24px; }
+      .bento-grid{
+        display:grid; grid-template-columns:1fr 1fr; gap:16px;
+      }
+      .card-span-2{ grid-column:span 2; }
+    }
+
+    /* ----- Phones (≤640px) ----- */
+    @media (max-width:640px){
+      .nav-container{
+        flex-wrap:wrap; row-gap:10px; padding:12px 16px;
+      }
+      .nav-actions{
+        width:100%; justify-content:space-between; gap:8px;
+      }
+      .nav-actions .btn{ flex:1; text-align:center; padding:10px 12px; font-size:.85rem; }
+
+      h1{ font-size:clamp(2rem, 9vw, 2.6rem) !important; line-height:1.12 !important; }
+      .subtitle{ font-size:1rem !important; }
+
+      .hero-cta-row{ flex-direction:column; gap:12px; }
+      .hero-cta-row .btn{ width:100%; }
+
+      .hero-proof{ flex-wrap:wrap; gap:10px; }
+
+      .demo-card{ padding:18px !important; }
+      .demo-body{ flex-direction:column; gap:20px; }
+      .ring-wrap{ margin:0 auto; }
+      .demo-floating-chip{ position:static; display:inline-block; margin-bottom:10px; }
+
+      .bento-grid{ grid-template-columns:1fr; }
+      .card-span-2{ grid-column:span 1; }
+      .bento-card{ padding:20px !important; }
+
+      .stats-band{
+        grid-template-columns:1fr 1fr; row-gap:20px;
+      }
+
+      .trust-strip{
+        flex-wrap:wrap; justify-content:center; gap:14px; text-align:center;
+      }
+
+      .quote-section blockquote{ font-size:1.15rem !important; line-height:1.5 !important; }
+
+      .final-cta .btn-group{ flex-direction:column; gap:12px; }
+      .final-cta .btn-group .btn{ width:100%; }
+
+      /* Floating CTA bar: compact strip, safe-area aware, never overlaps the bot launcher */
+      .action-bar{
+        left:0; right:0; bottom:0; width:100%;
+        border-radius:0; flex-direction:column; gap:8px;
+        padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+      }
+      .action-bar .btn-group{ width:100%; display:flex; gap:8px; }
+      .action-bar .btn-group .btn{ flex:1; }
+
+      /* Bot launcher: shrink and lift above the action bar / home indicator */
+      .bot-launcher{
+        bottom:calc(96px + env(safe-area-inset-bottom));
+        right:16px;
+      }
+      .bot-btn{ width:52px; height:52px; }
+      .bot-speech{ font-size:.8rem; max-width:150px; }
+    }
+
+    /* ----- Small phones (≤380px) ----- */
+    @media (max-width:380px){
+      h1{ font-size:1.8rem !important; }
+      .demo-card{ padding:14px !important; }
+      .btn-large{ padding:12px 18px !important; font-size:.9rem !important; }
+    }
+
+    /* ----- Landscape phones: shrink vertical padding so hero fits without a huge scroll jump ----- */
+    @media (max-width:900px) and (orientation:landscape) and (max-height:500px){
+      .hero{ padding-top:16px; padding-bottom:16px; }
+      #preloader .preloader-mark{ width:36px; height:36px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== PRELOADER / INTRO ANIMATION ===== -->
+  <div id="preloader" aria-hidden="true">
+    <svg class="preloader-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2 2 7l10 5 10-5-10-5Z"/>
+      <path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    <div class="preloader-bar"><div class="preloader-bar-fill"></div></div>
+    <span class="preloader-label">Loading LectureTracker</span>
+  </div>
+
+  <!-- ===== BACKGROUND ===== -->
+  <div class="bg-fixed" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow-a"></div>
+    <div class="bg-glow-b"></div>
+  </div>
+
+  <!-- ===== HEADER / NAV ===== -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="logo" aria-label="LectureTracker home" data-hero-in style="--d:0">
+        <span class="logo-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+        </span>
+        LectureTracker
+      </a>
+
+      <div class="nav-actions" data-hero-in style="--d:1">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+        <a href="/login/" class="btn btn-secondary">Sign In</a>
+        <a href="/signup/" class="btn btn-primary">Create Free Account</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <main>
+      <!-- ===== HERO ===== -->
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="badge" data-hero-in style="--d:1"><span class="dot"></span> Engineered for Academic Discipline</div>
+          <h1 data-hero-in style="--d:2">Consistency<br>over <span class="underline-accent">Intensity<svg viewBox="0 0 340 20" preserveAspectRatio="none"><path d="M3 14 Q 85 4, 170 11 T 337 9"/></svg></span>.</h1>
+          <p class="subtitle" data-hero-in style="--d:3">Build structural classroom habits that stick. Track your attendance, link tasks, and analyze your performance trends effortlessly.</p>
+
+          <div class="hero-cta-row" data-hero-in style="--d:4">
+            <a href="/backupData/" class="btn btn-primary btn-large">Get Started Free</a>
+            <a href="/login/" class="btn btn-secondary btn-large">Sign In</a>
+          </div>
+
+          <div class="hero-proof" data-hero-in style="--d:5">
+            <div class="avatar-stack">
+              <span>AO</span><span>TJ</span><span>FB</span><span>+</span>
+            </div>
+            <div class="hero-proof-text"><strong>2,400+</strong> students tracking smarter this term</div>
+          </div>
+        </div>
+
+        <!-- ===== LIVE DEMO WIDGET (tilt-enabled via data-tilt, see script) ===== -->
+        <div class="demo-wrap" data-hero-in style="--d:3">
+          <div class="demo-floating-chip">Above 75% — safe ✓</div>
+          <div class="demo-card" data-tilt>
+            <div class="demo-head">
+              <span class="demo-head-title">Your Attendance</span>
+              <span class="demo-live-chip"><span class="dot"></span> Live</span>
+            </div>
+            <div class="demo-body">
+              <div class="ring-wrap">
+                <svg viewBox="0 0 132 132">
+                  <circle class="ring-track" cx="66" cy="66" r="56" fill="none" stroke-width="11"></circle>
+                  <circle id="progressRing" class="ring-progress" cx="66" cy="66" r="56" fill="none" stroke-width="11"
+                    stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+                </svg>
+                <div class="ring-center">
+                  <span class="ring-pct" id="ringPct">0%</span>
+                  <span class="ring-label">PRESENT</span>
+                </div>
+              </div>
+              <div class="demo-stats">
+                <div class="demo-stat-row">
+                  <span class="demo-stat-label">CSC 304 — Algorithms</span>
+                  <span class="demo-stat-value up">92%</span>
+                </div>
+                <div class="demo-stat-row">
+                  <span class="demo-stat-label">Current streak</span>
+                  <span class="demo-stat-value">🔥 9 lectures</span>
+                </div>
+                <div class="demo-bars" id="demoBars">
+                  <i class="present" style="height:60%; animation-delay:.1s"></i>
+                  <i class="present" style="height:85%; animation-delay:.18s"></i>
+                  <i style="height:30%; animation-delay:.26s"></i>
+                  <i class="present" style="height:95%; animation-delay:.34s"></i>
+                  <i class="present" style="height:70%; animation-delay:.42s"></i>
+                  <i class="present" style="height:100%; animation-delay:.5s"></i>
+                  <i class="present" style="height:80%; animation-delay:.58s"></i>
+                </div>
+              </div>
+            </div>
+            <div class="demo-footer-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+              Updates the instant you check in — no manual math.
+            </div>
+          </div>
+
+          <img
+            class="hero-visual-img"
+            src="https://res.cloudinary.com/brop3jeq/image/upload/v1784291263/Screenshot5_prraxs.png"
+            alt="LectureTracker app screenshot showing attendance dashboard"
+            width="560" height="420"
+            fetchpriority="high"
+            loading="eager"
+            decoding="async"
+            style="max-width:100%; height:auto; border-radius:16px; margin-top:16px;">
+        </div>
+      </section>
+
+      <!-- ===== TRUST STRIP ===== -->
+      <div class="trust-strip" data-animate="fade-up" style="--d:0">
+        <span class="trust-item">
+          <img src="https://res.cloudinary.com/brop3jeq/image/upload/v1784291272/screenshot3_x271u2.png" alt="Faculty of Engineering logo" width="20" height="20" loading="lazy" decoding="async" style="vertical-align:middle; margin-right:6px; border-radius:4px;">
+          Faculty of Engineering
+        </span>
+        <span class="trust-item">
+          <img src="https://res.cloudinary.com/brop3jeq/image/upload/v1784291264/Screenshot1_dphjmh.png" alt="Computer Science Department logo" width="20" height="20" loading="lazy" decoding="async" style="vertical-align:middle; margin-right:6px; border-radius:4px;">
+          Computer Science Dept.
+        </span>
+        <span class="trust-item">
+          <img src="https://res.cloudinary.com/brop3jeq/image/upload/v1784291265/screenshot4_aewcub.png" alt="Business School logo" width="20" height="20" loading="lazy" decoding="async" style="vertical-align:middle; margin-right:6px; border-radius:4px;">
+          Business School
+        </span>
+        <span class="trust-item">
+          <img src="https://res.cloudinary.com/brop3jeq/image/upload/v1784291272/screenshot3_x271u2.png" alt="Medical Sciences logo" width="20" height="20" loading="lazy" decoding="async" style="vertical-align:middle; margin-right:6px; border-radius:4px;">
+          Medical Sciences
+        </span>
+      </div>
+
+      <!-- ===== STATS BAND ===== -->
+      <section class="stats-band" data-animate="fade-up" style="--d:0">
+        <div class="stat-block">
+          <div class="num" data-count="2400" data-suffix="+">0</div>
+          <div class="lbl">Active students</div>
+        </div>
+        <div class="stat-block">
+          <div class="num" data-count="98" data-suffix="%">0</div>
+          <div class="lbl">Attendance accuracy</div>
+        </div>
+        <div class="stat-block">
+          <div class="num" data-count="40" data-suffix="K+">0</div>
+          <div class="lbl">Lectures logged</div>
+        </div>
+        <div class="stat-block">
+          <div class="num" data-count="15" data-suffix="min">0</div>
+          <div class="lbl">Earlier reminder window</div>
+        </div>
+      </section>
+
+      <!-- ===== OVERVIEW / FEATURES ===== -->
+      <section class="overview-layout">
+        <div class="sticky-manifesto" data-animate="fade-up" style="--d:0">
+          <div class="section-eyebrow">Why LectureTracker</div>
+          <h2>Take control of your academic matrix.</h2>
+          <p>LectureTracker is built for students who are tired of dropping percentages, tracking timelines on chaotic group chats, and missing core updates.</p>
+          <p>No artificial clutter, no feature bloat. Just direct, actionable telemetry regarding your academic attendance and schedule commitments.</p>
+        </div>
+
+        <div class="bento-grid">
+          <div class="bento-card card-span-2" data-animate="fade-up" style="--d:1" data-tilt>
+            <img src="https://res.cloudinary.com/brop3jeq/image/upload/v1784291272/screenshot3_x271u2.png" alt="Attendance tracking dashboard preview" width="600" height="220" loading="lazy" decoding="async" style="width:100%; height:auto; border-radius:12px; margin-bottom:14px; display:block;">
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3>Smart Attendance Tracking</h3>
+            <p>Log your entry instantly. Calculate live attendance metrics dynamically for each stream, ensuring you stay safely above institutional strict requirements.</p>
+          </div>
+
+          <div class="bento-card blue" data-animate="fade-up" style="--d:2" data-tilt>
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <h3>Automated Triggers</h3>
+            <p>Receive localized pings 15 minutes ahead of schedule. Fully native pipelines ready on <a href="#">Play Store</a> and <a href="#">App Store</a>.</p>
+          </div>
+
+          <div class="bento-card" data-animate="fade-up" style="--d:3" data-tilt>
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </div>
+            <h3>Discipline Analytics</h3>
+            <p>Examine trends using clear, structured data profiles. Isolate patterns that block your consistency before exams creep up.</p>
+          </div>
+
+          <div class="bento-card card-span-2 blue" data-animate="fade-up" style="--d:1" data-tilt>
+            <img src="https://res.cloudinary.com/brop3jeq/image/upload/v1784291265/screenshot4_aewcub.png" alt="Assignment integration mapped to lecture timeline" width="600" height="220" loading="lazy" decoding="async" style="width:100%; height:auto; border-radius:12px; margin-bottom:14px; display:block;">
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </div>
+            <h3>Assignment Integration</h3>
+            <p>Contextually map tasks directly into lecture contexts. Know precisely what material covers which upcoming project submission.</p>
+          </div>
+
+          <div class="bento-card card-span-2" data-animate="fade-up" style="--d:2" data-tilt>
+            <div class="bento-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3>Study Group Co-ordination</h3>
+            <p>Sync cross-profile availabilities with teammates seamlessly. Extract real-time intersections without messy coordination threads.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TESTIMONIAL ===== -->
+      <section class="quote-section" data-animate="zoom-in" style="--d:0">
+        <div class="quote-mark">&ldquo;</div>
+        <blockquote>I went from guessing my attendance percentage to knowing it the second I sit down. Caught a failing module two weeks before it would've been too late.</blockquote>
+        <div class="quote-author">
+          <img src="https://res.cloudinary.com/brop3jeq/image/upload/v1784291264/Screenshot1_dphjmh.png" alt="Fatima B." width="36" height="36" loading="lazy" decoding="async" class="qa-avatar-img" style="border-radius:50%; vertical-align:middle; margin-right:8px; object-fit:cover;">
+          <span><strong>Fatima B.</strong> — 300L, Computer Science</span>
+        </div>
+      </section>
+
+      <!-- ===== FINAL CTA ===== -->
+      <section class="final-cta" data-animate="fade-up" style="--d:0">
+        <h2>Stop guessing your percentages.</h2>
+        <p>Set up your timetable in under three minutes. Free for every student.</p>
+        <div class="btn-group">
+          <a href="/backupData/" class="btn btn-primary btn-large">Get Started Free</a>
+          <a href="/login/" class="btn btn-secondary btn-large">I already have an account</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="bottom-credit">
+      &copy; 2026 LectureTracker. Built for high-performance students.
+    </footer>
+  </div>
+
+  <!-- ===== FLOATING ACTION BAR ===== -->
+  <div class="action-bar" id="ctaSection">
+    <span>Ready to take control?</span>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="window.location.href = window.location.origin + '/login/'">Login</button>
+      <button class="btn btn-primary" onclick="window.location.href = window.location.origin + '/backupData/'">Join Free</button>
+    </div>
+  </div>
+
+  <!-- ===== ROBOT CUSTOMER CARE LAUNCHER ===== -->
+  <div class="bot-launcher">
+    <div class="bot-speech" id="botSpeech" style="opacity:0; transform:translateY(6px); transition:opacity .5s ease, transform .5s ease;">Need help? Tap me 👋</div>
+    <button class="bot-btn" id="botBtn" aria-label="Chat with customer care on WhatsApp">
+      <span class="online-dot"></span>
+      <svg class="bot-svg" viewBox="0 0 60 60" fill="none">
+        <line x1="30" y1="8" x2="30" y2="2" stroke="#1a1206" stroke-width="2.5" stroke-linecap="round"/>
+        <circle class="bot-antenna-dot" cx="30" cy="2" r="3" fill="#1a1206"/>
+        <g class="bot-arm-left">
+          <line x1="14" y1="34" x2="6" y2="26" stroke="#1a1206" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="6" cy="26" r="3.2" fill="#1a1206"/>
+        </g>
+        <line x1="46" y1="34" x2="54" y2="38" stroke="#1a1206" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="54" cy="38" r="3.2" fill="#1a1206"/>
+        <rect x="13" y="10" width="34" height="28" rx="11" fill="#1a1206"/>
+        <rect x="17" y="14" width="26" height="20" rx="8" fill="#ffc14d"/>
+        <rect class="bot-eye-l" x="22" y="21" width="6" height="7" rx="3" fill="#1a1206"/>
+        <rect class="bot-eye-r" x="32" y="21" width="6" height="7" rx="3" fill="#1a1206"/>
+        <path d="M24 30 Q30 35 36 30" stroke="#1a1206" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <rect x="18" y="36" width="24" height="18" rx="8" fill="#1a1206"/>
+        <rect x="22" y="40" width="16" height="10" rx="4" fill="#ffc14d"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ===== EXTERNAL JAVASCRIPT (unchanged — keep whatever landing_page.js already does,
+       e.g. the theme toggle and the ring/counter animations) ===== -->
+  <script src="{% static 'js/landing_page.js' %}" defer></script>
+
+  <!-- ===== DEFERRED-LOAD / MOTION CONTROLLER ===== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var isTouch = window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+      /* ---------- Preloader ---------- */
+      var preloader = document.getElementById('preloader');
+      var MIN_DISPLAY_MS = 700;
+      var FALLBACK_MS = 1800;
+      var startedAt = Date.now();
+
+      function revealPage() {
+        if (document.body.classList.contains('page-revealed')) return;
+        var elapsed = Date.now() - startedAt;
+        var wait = Math.max(0, MIN_DISPLAY_MS - elapsed);
+        setTimeout(function () {
+          document.body.classList.add('page-revealed');
+          if (preloader) {
+            preloader.classList.add('preloader-done');
+            setTimeout(function () { preloader.remove(); }, 650);
+          }
+          document.dispatchEvent(new CustomEvent('lt:ready'));
+        }, wait);
+      }
+
+      if (document.readyState === 'complete') {
+        revealPage();
+      } else {
+        window.addEventListener('load', revealPage);
+      }
+      setTimeout(revealPage, FALLBACK_MS);
+
+      /* ---------- Scroll-triggered entrance (below the fold) ---------- */
+      function initScrollReveal() {
+        var targets = document.querySelectorAll('[data-animate]');
+        if (!targets.length) return;
+        if (!('IntersectionObserver' in window)) {
+          targets.forEach(function (el) { el.classList.add('in-view'); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in-view');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        targets.forEach(function (el) { io.observe(el); });
+      }
+
+      /* ---------- Non-critical UI reveal (bot bubble) ---------- */
+      function initNonCritical() {
+        var botSpeech = document.getElementById('botSpeech');
+        if (botSpeech) {
+          setTimeout(function () { botSpeech.classList.add('bot-speech-visible'); }, 500);
+        }
+      }
+
+      /* ---------- Ambient parallax on the background glows (auto, scroll-linked) ----------
+         Skipped entirely on touch devices — the perf cost isn't worth it since the effect is
+         barely visible on a phone-sized viewport anyway, and skipped under reduced-motion. */
+      function initParallax() {
+        if (reduceMotion || isTouch) return;
+        var glowA = document.querySelector('.bg-glow-a');
+        var glowB = document.querySelector('.bg-glow-b');
+        if (!glowA && !glowB) return;
+        var ticking = false;
+        function update() {
+          var y = window.scrollY || window.pageYOffset;
+          if (glowA) glowA.style.transform = 'translate3d(0,' + (y * 0.06) + 'px,0)';
+          if (glowB) glowB.style.transform = 'translate3d(0,' + (-y * 0.04) + 'px,0)';
+          ticking = false;
+        }
+        window.addEventListener('scroll', function () {
+          if (!ticking) { requestAnimationFrame(update); ticking = true; }
+        }, { passive: true });
+      }
+
+      /* ---------- Interactive card tilt: mouse-move on desktop, gentle touch on mobile ----------
+         Desktop: cursor position drives a 3D tilt for a "physical card" feel.
+         Mobile: no hover, so a light touch tilt fires on touchstart/touchend for tactile
+         feedback, then the card settles back — cheap, short-lived, and skipped under
+         reduced-motion. */
+      function initTilt() {
+        var cards = document.querySelectorAll('[data-tilt]');
+        if (!cards.length || reduceMotion) return;
+
+        cards.forEach(function (card) {
+          if (!isTouch) {
+            card.addEventListener('mousemove', function (e) {
+              var r = card.getBoundingClientRect();
+              var px = (e.clientX - r.left) / r.width - 0.5;
+              var py = (e.clientY - r.top) / r.height - 0.5;
+              card.style.transform =
+                'perspective(700px) rotateX(' + (py * -6) + 'deg) rotateY(' + (px * 8) + 'deg) translateZ(0)';
+            });
+            card.addEventListener('mouseleave', function () {
+              card.style.transform = '';
+            });
+          } else {
+            card.addEventListener('touchstart', function () {
+              card.style.transform = 'perspective(700px) rotateX(2deg) scale(.99)';
+            }, { passive: true });
+            card.addEventListener('touchend', function () {
+              card.style.transform = '';
+            }, { passive: true });
+          }
+        });
+      }
+
+      /* ---------- Tap / click ripple on primary interactive elements ----------
+         Works for both mouse clicks and touch taps (pointer events unify the two), and is
+         cheap enough to leave on for touch devices — it's the main piece of tactile feedback
+         a phone gets since :hover doesn't exist there. */
+      function initRipple() {
+        if (reduceMotion) return;
+        var selector = '.btn, .bento-card, .bot-btn';
+        document.addEventListener('pointerdown', function (e) {
+          var el = e.target.closest(selector);
+          if (!el) return;
+          var rect = el.getBoundingClientRect();
+          var size = Math.max(rect.width, rect.height);
+          var ripple = document.createElement('span');
+          ripple.className = 'lt-ripple';
+          ripple.style.width = ripple.style.height = size + 'px';
+          ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+          ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+          el.appendChild(ripple);
+          ripple.addEventListener('animationend', function () { ripple.remove(); });
+        }, { passive: true });
+      }
+
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(initScrollReveal);
+        requestIdleCallback(initNonCritical);
+        requestIdleCallback(initParallax);
+        requestIdleCallback(initTilt);
+        requestIdleCallback(initRipple);
+      } else {
+        setTimeout(initScrollReveal, 100);
+        setTimeout(initNonCritical, 300);
+        setTimeout(initParallax, 300);
+        setTimeout(initTilt, 300);
+        setTimeout(initRipple, 300);
+      }
+    });
+  </script>
+</body>
+</html>

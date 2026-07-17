@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from api.serializers import *
 from api.models import *
 
-import datetime as dt
+from django.utils import timezone as dt
 import os
 
 from api.task import email_delegate
@@ -1461,6 +1461,9 @@ def allTimeBackUpHistory(request):
 #This is for the homepage
 @api_view(['GET'])
 def home(request):
+    from django.shortcuts import redirect
+    return redirect(to=f'{request.build_absolute_uri()}v2/', preserve_request=True)
+ 
     return render(request, 'api/landing_page.html')
 
 #for getting all user in the system

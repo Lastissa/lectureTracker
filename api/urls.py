@@ -1,14 +1,15 @@
 from django.urls import path
 from . import views
+from django.views.decorators.cache import cache_page
 
 urlpatterns = [
-    path('', views.home),
+    path('', cache_page(60*60)(views.home)),
 
     # Single function
     path('viewData/', views.frontendViewData),
     path('viewData/json/', views.viewData),
 
-    path('signup/', views.frontendbackupData),
+    path('signup/', cache_page(60*60)(views.frontendbackupData)),
     path('backupData/json/', views.backupData),
 
     path('deactivateAccount/', views.deactivateAccount),
